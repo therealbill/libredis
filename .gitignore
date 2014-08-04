@@ -1,0 +1,7 @@
+# VIM
+*.swp
+*.swo
+
+
+# GO
+*.out
