@@ -1,7 +1,7 @@
-goredis
+libredis
 =======
 
-[![GoDoc](https://godoc.org/github.com/xuyu/goredis?status.png)](https://godoc.org/github.com/xuyu/goredis)
+[![GoDoc](https://godoc.org/github.com/therealbill/libredis?status.png)](https://godoc.org/github.com/therealbill/libredis)
 
 redis client in golang
 
@@ -19,13 +19,13 @@ Features
 --------
 
 * Python Redis Client Like API
-* Support [Pipeling](http://godoc.org/github.com/xuyu/goredis#Pipelined)
-* Support [Transaction](http://godoc.org/github.com/xuyu/goredis#Transaction)
-* Support [Publish Subscribe](http://godoc.org/github.com/xuyu/goredis#PubSub)
-* Support [Lua Eval](http://godoc.org/github.com/xuyu/goredis#Redis.Eval)
-* Support [Connection Pool](http://godoc.org/github.com/xuyu/goredis#ConnPool)
-* Support [Dial URL-Like](http://godoc.org/github.com/xuyu/goredis#DialURL)
-* Support [monitor](http://godoc.org/github.com/xuyu/goredis#MonitorCommand), [sort](http://godoc.org/github.com/xuyu/goredis#SortCommand), [scan](http://godoc.org/github.com/xuyu/goredis#Redis.Scan), [slowlog](http://godoc.org/github.com/xuyu/goredis#SlowLog) .etc
+* Support [Pipeling](http://godoc.org/github.com/therealbill/libredis#Pipelined)
+* Support [Transaction](http://godoc.org/github.com/therealbill/libredis#Transaction)
+* Support [Publish Subscribe](http://godoc.org/github.com/therealbill/libredis#PubSub)
+* Support [Lua Eval](http://godoc.org/github.com/therealbill/libredis#Redis.Eval)
+* Support [Connection Pool](http://godoc.org/github.com/therealbill/libredis#ConnPool)
+* Support [Dial URL-Like](http://godoc.org/github.com/therealbill/libredis#DialURL)
+* Support [monitor](http://godoc.org/github.com/therealbill/libredis#MonitorCommand), [sort](http://godoc.org/github.com/therealbill/libredis#SortCommand), [scan](http://godoc.org/github.com/therealbill/libredis#Redis.Scan), [slowlog](http://godoc.org/github.com/therealbill/libredis#SlowLog) .etc
 
 
 Document
@@ -33,7 +33,7 @@ Document
 
 - [Redis Commands](http://redis.io/commands)
 - [Redis Protocol](http://redis.io/topics/protocol)
-- [GoDoc](http://godoc.org/github.com/xuyu/goredis)
+- [GoDoc](http://godoc.org/github.com/therealbill/libredis)
 
 
 Simple Example
@@ -129,7 +129,3 @@ At my virtualbox Ubuntu 13.04 with single CPU: Intel(R) Core(TM) i5-3450 CPU @ 3
 Welcome to show your benchmark result :)
 
 
-License
--------
-
-[The MIT License (MIT) Copyright (c) 2013 xuyu](http://opensource.org/licenses/MIT)
