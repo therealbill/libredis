@@ -108,7 +108,7 @@ func (r *Redis) ConfigRewrite() error {
 // ConfigSet is used in order to reconfigure the server at run time without the need to restart Redis.
 // You can change both trivial parameters or switch from one to another persistence option using this command.
 func (r *Redis) ConfigSet(parameter, value string) error {
-	rp, err := r.ExecuteCommand("CONFIG", "SET")
+	rp, err := r.ExecuteCommand("CONFIG", "SET", parameter, value)
 	if err != nil {
 		return err
 	}
@@ -163,11 +163,27 @@ func (r *Redis) FlushDB() error {
 	return err
 }
 
-// Inforeturns information and statistics about the server
+// Info returns information and statistics about the server
 // In RedisInfoAll struct see the github.com/therealbill/libredis/info package
 // for details
 func (r *Redis) Info() (sinfo info.RedisInfoAll, err error) {
 	rp, err := r.ExecuteCommand("info", "all")
+	if err != nil {
+		return
+	}
+	strval, _ := rp.StringValue()
+	if err != nil {
+		return
+	}
+	sinfo = info.GetAllInfo(strval)
+	return
+}
+
+// SentinelInfo returns information and statistics for a sentinel instance
+// In RedisInfoAll struct see the github.com/therealbill/libredis/info package
+// for details
+func (r *Redis) SentinelInfo() (sinfo info.RedisInfoAll, err error) {
+	rp, err := r.ExecuteCommand("info")
 	if err != nil {
 		return
 	}
