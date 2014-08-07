@@ -41,6 +41,13 @@ and rewritten for better performance.
 * Support [monitor](http://godoc.org/github.com/therealbill/libredis#MonitorCommand), [sort](http://godoc.org/github.com/therealbill/libredis#SortCommand), [scan](http://godoc.org/github.com/therealbill/libredis#Redis.Scan), [slowlog](http://godoc.org/github.com/therealbill/libredis#SlowLog) .etc
 
 
+## Redis Info
+
+The info package provides functions for parsing the string results of an
+Redis info command. When using the libredis/client package these are
+unnecessary. This package is useful for those using other Redis client
+packages which return strings.
+
 
 ## Related Articles
 

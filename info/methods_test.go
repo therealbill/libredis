@@ -112,10 +112,6 @@ func TestInfo(t *testing.T) {
 		t.Error("Failed to parse Replication.Role")
 		t.Fail()
 	}
-	if all.CPU.UsedCPUSystem == 0 {
-		t.Error("Failed to parse Replication.Role")
-		t.Fail()
-	}
 
 	// Persistence
 	if all.Persistence.AOFEnabled {
