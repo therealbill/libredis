@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	rclient "github.com/therealbill/libredis/client"
@@ -26,21 +27,24 @@ func init() {
 }
 
 func main() {
-	all := r.GetAllInfo()
+	all, err := r.Info()
+	if err != nil {
+		log.Fatal("unable to connect and get info")
+	}
 	fmt.Printf("Redis Server Version: %s\n", all.Server.Version)
 	fmt.Printf("Redis Server Role: %s\n", all.Replication.Role)
 	if all.Replication.ConnectedSlaves > 0 {
 		fmt.Println("Slaves:")
 		fmt.Printf("\tNumber Connected: %d\n", all.Replication.ConnectedSlaves)
 		for _, slave := range all.Replication.Slaves {
-			fmt.Printf("\tSlave: %s\n", slave)
+			fmt.Printf("\tSlave: %+v\n", slave)
 		}
 	}
 	if all.Replication.Role == "slave" {
 		fmt.Printf("Master: %s:%d\n", all.Replication.MasterHost, all.Replication.MasterPort)
 	}
 
-	fmt.Printf("Redis Used Memory: %d\n", all.Memory.UsedMemory)
+	fmt.Printf("Redis Used Memory: %db\n", all.Memory.UsedMemory)
 	fmt.Printf("Redis Used Memory Human: %s\n", all.Memory.UsedMemoryHuman)
 
 }

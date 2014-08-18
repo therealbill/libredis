@@ -1,6 +1,7 @@
 package info
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -151,7 +152,29 @@ func GetAllInfo(infostring string) (info RedisInfoAll) {
 						if strings.Contains(k, "slave") {
 							_, err := strconv.Atoi(string(k[5]))
 							if err == nil {
-								alldata.Replication.Slaves = append(alldata.Replication.Slaves, v)
+								var slave InfoSlaves
+								pairs := strings.Split(v, ",")
+								for _, pstring := range pairs {
+									println("pstring:", pstring)
+									pdata := strings.Split(pstring, "=")
+									switch pdata[0] {
+									case "ip":
+										slave.IP = pdata[1]
+									case "port":
+										port, _ := strconv.Atoi(pdata[1])
+										slave.Port = port
+									case "state":
+										slave.State = pdata[1]
+									case "offset":
+										num, _ := strconv.Atoi(pdata[1])
+										slave.Offset = num
+									case "lag":
+										num, _ := strconv.Atoi(pdata[1])
+										slave.Lag = num
+									}
+								}
+								alldata.Replication.Slaves = append(alldata.Replication.Slaves, slave)
+								fmt.Printf("slave info: %+v\n", v)
 							}
 						}
 					}

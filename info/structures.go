@@ -97,22 +97,22 @@ type InfoStats struct {
 
 // InfoReplication represents the Replication section of Redis INFO
 type InfoReplication struct {
-	Role                        string   `redis:"role"`
-	ConnectedSlaves             int      `redis:"connected_slaves"`
-	MasterReplicationOffset     int      `redis:"master_repl_offset"`
-	ReplicationBacklogActive    int      `redis:"repl_backlog_active"`
-	ReplicationBacklogSize      int      `redis:"repl_backlog_size"`
-	ReplicationBacklogFirstByte int      `redis:"repl_backlog_first_byte_offset"`
-	ReplicationBacklogHistLen   int      `redis:"repl_backlog_histlen"`
-	MasterHost                  string   `redis:"master_host"`
-	MasterPort                  int      `redis:"master_port"`
-	MasterLinkStatus            string   `redis:"master_link_status"`
-	MasterLastIOSecondsAgo      int      `redis:"master_last_io_seconds_ago"`
-	MasterSyncInProgress        bool     `redis:"master_sync_in_progress"`
-	SlaveReplicationOffset      int      `redis:"slave_repl_offset"`
-	SlavePriority               int      `redis:"slave_priority"`
-	SlaveReadOnly               bool     `redis:"slave_read_only"`
-	Slaves                      []string `redis:"slave*"`
+	Role                        string       `redis:"role"`
+	ConnectedSlaves             int          `redis:"connected_slaves"`
+	MasterReplicationOffset     int          `redis:"master_repl_offset"`
+	ReplicationBacklogActive    int          `redis:"repl_backlog_active"`
+	ReplicationBacklogSize      int          `redis:"repl_backlog_size"`
+	ReplicationBacklogFirstByte int          `redis:"repl_backlog_first_byte_offset"`
+	ReplicationBacklogHistLen   int          `redis:"repl_backlog_histlen"`
+	MasterHost                  string       `redis:"master_host"`
+	MasterPort                  int          `redis:"master_port"`
+	MasterLinkStatus            string       `redis:"master_link_status"`
+	MasterLastIOSecondsAgo      int          `redis:"master_last_io_seconds_ago"`
+	MasterSyncInProgress        bool         `redis:"master_sync_in_progress"`
+	SlaveReplicationOffset      int          `redis:"slave_repl_offset"`
+	SlavePriority               int          `redis:"slave_priority"`
+	SlaveReadOnly               bool         `redis:"slave_read_only"`
+	Slaves                      []InfoSlaves `redis:"slave*"`
 }
 
 // InfoCPU represents the CPU section of Redis INFO
@@ -151,4 +151,14 @@ type RedisInfoAll struct {
 type AllInfoConfig struct {
 	Input map[string]map[string]string
 	Info  RedisInfoAll
+}
+
+//InfoSlaves represents the slave identity in the replication section of the
+//Redis INFO command
+type InfoSlaves struct {
+	IP     string
+	Port   int
+	State  string
+	Offset int
+	Lag    int
 }
