@@ -163,7 +163,7 @@ func (r *Redis) SentinelSlaves(podname string) (slaves []SlaveInfo) {
 		} else {
 			info, err := r.buildSlaveInfoStruct(slavemap)
 			if err != nil {
-				fmt.Printf("Unable to get slaves, err:", err, "\n")
+				fmt.Printf("Unable to get slaves, err: %s\n", err)
 			}
 			slaves = append(slaves, info)
 		}
