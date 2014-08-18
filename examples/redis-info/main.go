@@ -36,6 +36,12 @@ func main() {
 	fmt.Printf("Redis Server Version: %s\n", all.Server.Version)
 	fmt.Printf("Redis Server Role: %s\n", all.Replication.Role)
 	// Accessing the Replication section is done via all.Replication
+	switch all.Replication.Role {
+	case "slave":
+		fmt.Printf("Slave of: %s:%d\n", all.Replication.MasterHost, all.Replication.MasterPort)
+	case "master":
+		println("Is a Master")
+	}
 	if all.Replication.ConnectedSlaves > 0 {
 		fmt.Println("Slaves")
 		fmt.Println("======")
@@ -49,9 +55,6 @@ func main() {
 			fmt.Printf("    Lag: %d\n", slave.Lag)
 			fmt.Printf("    Offset: %d\n", slave.Offset)
 		}
-	}
-	if all.Replication.Role == "slave" {
-		fmt.Printf("Master: %s:%d\n", all.Replication.MasterHost, all.Replication.MasterPort)
 	}
 	// Accessing the Memory section is done via all.Memory
 	fmt.Printf("Redis Used Memory: %db\n", all.Memory.UsedMemory)
