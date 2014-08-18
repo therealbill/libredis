@@ -1,7 +1,6 @@
 package info
 
 import (
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -155,7 +154,6 @@ func GetAllInfo(infostring string) (info RedisInfoAll) {
 								var slave InfoSlaves
 								pairs := strings.Split(v, ",")
 								for _, pstring := range pairs {
-									println("pstring:", pstring)
 									pdata := strings.Split(pstring, "=")
 									switch pdata[0] {
 									case "ip":
@@ -174,7 +172,6 @@ func GetAllInfo(infostring string) (info RedisInfoAll) {
 									}
 								}
 								alldata.Replication.Slaves = append(alldata.Replication.Slaves, slave)
-								fmt.Printf("slave info: %+v\n", v)
 							}
 						}
 					}
