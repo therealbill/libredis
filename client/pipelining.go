@@ -1,4 +1,4 @@
-package libredis
+package client
 
 // Pipelined implements redis pipeline mode.
 // A Request/Response server can be implemented so that it is able to process new requests

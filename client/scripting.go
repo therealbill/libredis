@@ -1,4 +1,4 @@
-package libredis
+package client
 
 // ScriptExists returns information about the existence of the scripts in the script cache.
 // Multi-bulk reply The command returns an array of integers

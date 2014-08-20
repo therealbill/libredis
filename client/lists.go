@@ -1,4 +1,4 @@
-package libredis
+package client
 
 // BLPop is a blocking list pop primitive.
 // It is the blocking version of LPOP

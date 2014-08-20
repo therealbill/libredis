@@ -1,4 +1,4 @@
-package libredis
+package client
 
 // SortCommand represents a redis Sort command
 type SortCommand struct {

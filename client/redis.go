@@ -76,7 +76,7 @@
 //
 // Transaction, Lua Eval, Publish/Subscribe, Monitor, Scan, Sort are also supported.
 //
-package libredis
+package client
 
 import (
 	"bufio"

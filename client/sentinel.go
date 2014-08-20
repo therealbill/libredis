@@ -1,4 +1,4 @@
-package libredis
+package client
 
 import (
 	"fmt"
@@ -278,10 +278,12 @@ func (r *Redis) SentinelGetMaster(podname string) (conninfo MasterAddress, err e
 		return conninfo, err
 	}
 	info, err := rp.ListValue()
-	conninfo.Host = info[0]
-	conninfo.Port, err = strconv.Atoi(info[1])
-	if err != nil {
-		fmt.Println("Got bad port info from server, causing err:", err)
+	if len(info) != 0 {
+		conninfo.Host = info[0]
+		conninfo.Port, err = strconv.Atoi(info[1])
+		if err != nil {
+			fmt.Println("Got bad port info from server, causing err:", err)
+		}
 	}
 	return conninfo, err
 }

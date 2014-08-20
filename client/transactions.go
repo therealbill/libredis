@@ -1,4 +1,4 @@
-package libredis
+package client
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-package libredis
+package client
 
 // Echo command returns message.
 func (r *Redis) Echo(message string) (string, error) {
