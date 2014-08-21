@@ -263,7 +263,7 @@ func (r *Redis) buildMasterInfoStruct(info map[string]string) (master MasterInfo
 // SentinelMasterInfo returns the information about a pod or master
 func (r *Redis) SentinelMasterInfo(podname string) (master MasterInfo, err error) {
 	rp, err := r.ExecuteCommand("SENTINEL", "MASTER", podname)
-	if err != nil {
+	if err != nil || len(rp.Error) > 0 {
 		return master, err
 	}
 	info, err := rp.HashValue()
