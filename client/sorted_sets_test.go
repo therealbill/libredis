@@ -6,18 +6,44 @@ import (
 
 func TestZAdd(t *testing.T) {
 	r.Del("key")
+	n, err := r.ZAdd("key", 1.0, "foo")
+	if err != nil {
+		t.Error(err)
+	} else if n != 1 {
+		t.Fail()
+	}
+}
+
+func BenchmarkZAdd(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		r.ZAdd("key", 1.0, "foo")
+	}
+}
+
+func TestZAddVariadic(t *testing.T) {
+	r.Del("key")
 	pairs := map[string]float64{
 		"one":   1.0,
 		"two":   1.0,
 		"three": 3.0,
 	}
-	if n, err := r.ZAdd("key", pairs); err != nil {
+	if n, err := r.ZAddVariadic("key", pairs); err != nil {
 		t.Error(err)
 	} else if n != 3 {
 		t.Fail()
 	}
-	if n, _ := r.ZAdd("key", map[string]float64{"two": 2.0}); n != 0 {
+	if n, _ := r.ZAddVariadic("key", map[string]float64{"two": 2.0}); n != 0 {
 		t.Fail()
+	}
+}
+func BenchmarkZAddVariadic(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		pairs := map[string]float64{
+			"one":   1.0,
+			"two":   1.0,
+			"three": 3.0,
+		}
+		r.ZAddVariadic("key", pairs)
 	}
 }
 
@@ -28,7 +54,7 @@ func TestZCard(t *testing.T) {
 		"two":   1.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if n, err := r.ZCard("key"); err != nil {
 		t.Error(err)
 	} else if n != 3 {
@@ -43,7 +69,7 @@ func TestZCount(t *testing.T) {
 		"two":   2.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if n, err := r.ZCount("key", "-inf", "+inf"); err != nil {
 		t.Error(err)
 	} else if n != 3 {
@@ -61,7 +87,7 @@ func TestZIncrBy(t *testing.T) {
 		"two":   1.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if n, err := r.ZIncrBy("key", 1.0, "two"); err != nil {
 		t.Error(err)
 	} else if n != 2.0 {
@@ -76,7 +102,7 @@ func TestZRange(t *testing.T) {
 		"two":   2.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if result, err := r.ZRange("key", 0, -1, false); err != nil {
 		t.Error(err)
 	} else if len(result) != 3 {
@@ -102,7 +128,7 @@ func TestZRank(t *testing.T) {
 		"two":   2.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if n, err := r.ZRank("key", "three"); err != nil {
 		t.Error(err)
 	} else if n != 2 {
@@ -122,7 +148,7 @@ func TestZRem(t *testing.T) {
 		"two":   2.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if n, err := r.ZRem("key", "three", "four"); err != nil {
 		t.Error(err)
 	} else if n != 1 {
@@ -137,7 +163,7 @@ func TestZRemRangeByRank(t *testing.T) {
 		"two":   2.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if n, err := r.ZRemRangeByRank("key", 0, 1); err != nil {
 		t.Error(err)
 	} else if n != 2 {
@@ -152,7 +178,7 @@ func TestZRemRangeByScore(t *testing.T) {
 		"two":   2.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if n, err := r.ZRemRangeByScore("key", "-inf", "(2"); err != nil {
 		t.Error(err)
 	} else if n != 1 {
@@ -167,7 +193,7 @@ func TestZRevRange(t *testing.T) {
 		"two":   2.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if result, err := r.ZRevRange("key", 0, -1, false); err != nil {
 		t.Error(err)
 	} else if len(result) != 3 {
@@ -184,7 +210,7 @@ func TestZRevRank(t *testing.T) {
 		"two":   2.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if n, err := r.ZRevRank("key", "three"); err != nil {
 		t.Error(err)
 	} else if n != 0 {
@@ -204,7 +230,7 @@ func TestZScore(t *testing.T) {
 		"two":   2.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if result, err := r.ZScore("key", "member"); err != nil {
 		t.Error(err)
 	} else if result != nil {
@@ -224,7 +250,7 @@ func TestZScan(t *testing.T) {
 		"two":   2.0,
 		"three": 3.0,
 	}
-	r.ZAdd("key", pairs)
+	r.ZAddVariadic("key", pairs)
 	if _, list, err := r.ZScan("key", 0, "", 0); err != nil {
 		t.Error(err)
 	} else if len(list) == 0 {
@@ -234,11 +260,11 @@ func TestZScan(t *testing.T) {
 
 func TestZInterStore(t *testing.T) {
 	r.Del("zset1", "zset2")
-	r.ZAdd("zset1", map[string]float64{
+	r.ZAddVariadic("zset1", map[string]float64{
 		"one": 1,
 		"two": 2,
 	})
-	r.ZAdd("zset2", map[string]float64{
+	r.ZAddVariadic("zset2", map[string]float64{
 		"one":   1,
 		"two":   2,
 		"three": 3,
@@ -252,11 +278,11 @@ func TestZInterStore(t *testing.T) {
 
 func TestZUnionStore(t *testing.T) {
 	r.Del("zset1", "zset2")
-	r.ZAdd("zset1", map[string]float64{
+	r.ZAddVariadic("zset1", map[string]float64{
 		"one": 1,
 		"two": 2,
 	})
-	r.ZAdd("zset2", map[string]float64{
+	r.ZAddVariadic("zset2", map[string]float64{
 		"one":   1,
 		"two":   2,
 		"three": 3,
@@ -270,7 +296,7 @@ func TestZUnionStore(t *testing.T) {
 
 func TestZRangeByScore(t *testing.T) {
 	r.Del("key")
-	r.ZAdd("key", map[string]float64{
+	r.ZAddVariadic("key", map[string]float64{
 		"one":   1,
 		"two":   2,
 		"three": 3,
@@ -284,7 +310,7 @@ func TestZRangeByScore(t *testing.T) {
 
 func TestZRevRangeByScore(t *testing.T) {
 	r.Del("key")
-	r.ZAdd("key", map[string]float64{
+	r.ZAddVariadic("key", map[string]float64{
 		"one":   1,
 		"two":   2,
 		"three": 3,
