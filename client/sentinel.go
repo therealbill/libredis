@@ -262,6 +262,7 @@ func (r *Redis) buildMasterInfoStruct(info map[string]string) (master MasterInfo
 
 // SentinelMasterInfo returns the information about a pod or master
 func (r *Redis) SentinelMasterInfo(podname string) (master MasterInfo, err error) {
+	log.Println("get info for:", podname)
 	rp, err := r.ExecuteCommand("SENTINEL", "MASTER", podname)
 	if err != nil || len(rp.Error) > 0 {
 		return master, err
@@ -297,7 +298,7 @@ func (r *Redis) SentinelFailover(podname string) (bool, error) {
 
 	if rp.Error != "" {
 		log.Println("Error on failover command execution:", rp.Error)
-		return false, fmt.Errorf("Unable to failover pod '%s' due to error: '%s'", podname, rp.Error)
+		return false, fmt.Errorf(rp.Error)
 	}
 	return true, nil
 }

@@ -337,7 +337,8 @@ func (r *Redis) ExecuteCommand(args ...interface{}) (*Reply, error) {
 		return nil, err
 	}
 	defer func() { r.pool.Put(c) }()
-	if err := c.SendCommand(args...); err != nil {
+	err = c.SendCommand(args...)
+	if err != nil {
 		if err != io.EOF {
 			return nil, err
 		}

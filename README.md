@@ -29,6 +29,29 @@ The client code is a fork from
 [Goredis](https://github.com/xuyu/goredis). The code is being cleaned up
 and rewritten for better performance.
 
+#### API Volatility
+
+Thoe original API, while better than other libraries, did not meet what
+I felt the API should look like. The info command returned simple
+strings, any command which supported variadic arguments required them,
+and certain errors should be handled at a lower level and returned in a
+more formal manner at the API level. 
+
+As such, the API is currently under a bit of flux. Any command which
+accepts variadic paramters such as `ZAdd` will be changing to be of the
+simple form with Variadic added for the variadic call. For example, `ZAdd`
+will take the key, score, and value while `ZAddVariadic` will take a
+`map[string]float64` to variadic commands. This pattern will spread
+through the code as I find them or find the time to pre-emptively fix
+them.
+
+Where appropriate certain known errors will be converted from raw Redis
+errors to typed CommandErrors to provide simpler error handling. It is likely
+all commands will return a typed CommandError to provide commonality
+across the client API.
+
+#### Notables
+
 * Python Redis Client Like API
 * Support [Pipeling](http://godoc.org/github.com/therealbill/libredis#Pipelined)
 * Support [Transaction](http://godoc.org/github.com/therealbill/libredis#Transaction)
@@ -36,7 +59,7 @@ and rewritten for better performance.
 * Support [Lua Eval](http://godoc.org/github.com/therealbill/libredis#Redis.Eval)
 * Support [Connection Pool](http://godoc.org/github.com/therealbill/libredis#ConnPool)
 * Support [Dial URL-Like](http://godoc.org/github.com/therealbill/libredis#DialURL)
-* Support for Sentinel command
+* Support for Sentinel commands
 * Support Parsing Redis Info commands into Maps and structs
 * Support [monitor](http://godoc.org/github.com/therealbill/libredis#MonitorCommand), [sort](http://godoc.org/github.com/therealbill/libredis#SortCommand), [scan](http://godoc.org/github.com/therealbill/libredis#Redis.Scan), [slowlog](http://godoc.org/github.com/therealbill/libredis#SlowLog) .etc
 
@@ -47,6 +70,13 @@ The info package provides functions for parsing the string results of an
 Redis info command. When using the libredis/client package these are
 unnecessary. This package is useful for those using other Redis client
 packages which return strings.
+
+### Sentinel Info
+
+The arguments for `INFO` in Redis when being issued against a Sentinel
+returned null for `INFO all`. This has been subsequently fixed to match
+the Redis `INFO all` pattern. If using a Redis version of 2.8.13 or
+older, use `SentinelInfo` instead of Info to handle this scenario.
 
 
 ## Related Articles
