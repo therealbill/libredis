@@ -15,7 +15,15 @@ import (
 // Return value:
 // The number of elements added to the sorted sets,
 // not including elements already existing for which the score was updated.
-func (r *Redis) ZAdd(key string, pairs map[string]float64) (int64, error) {
+func (r *Redis) ZAdd(key string, score float64, val string) (int64, error) {
+	rp, err := r.ExecuteCommand("ZADD", key, score, val)
+	if err != nil {
+		return 0, err
+	}
+	return rp.IntegerValue()
+}
+
+func (r *Redis) ZAddVariadic(key string, pairs map[string]float64) (int64, error) {
 	args := packArgs("ZADD", key)
 	for member, score := range pairs {
 		args = append(args, score, member)
