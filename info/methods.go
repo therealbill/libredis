@@ -148,8 +148,9 @@ func GetAllInfo(infostring string) (info RedisInfoAll) {
 				tag := p.Tag.Get("redis")
 				if p.Name == "Slaves" && tag == "slave*" {
 					for k, v := range info {
-						if strings.Contains(k, "slave") {
-							_, err := strconv.Atoi(string(k[5]))
+						if strings.Contains(k, "slave") && strings.Contains(v, "ip=") {
+							idstring := strings.TrimLeft(k, "slave")
+							_, err := strconv.Atoi(string(idstring))
 							if err == nil {
 								var slave InfoSlaves
 								pairs := strings.Split(v, ",")
