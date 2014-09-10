@@ -111,7 +111,7 @@ type SlaveInfo struct {
 	SlaveReplicationOffset int    `redis:"slave-repl-offset"`
 }
 
-// buildSlaveInfoStruct builods the struct for a slave from the Redis slaves command
+// buildSlaveInfoStruct builds the struct for a slave from the Redis slaves command
 func (r *Redis) buildSlaveInfoStruct(info map[string]string) (master SlaveInfo, err error) {
 	s := reflect.ValueOf(&master).Elem()
 	typeOfT := s.Type()
@@ -150,7 +150,7 @@ func (r *Redis) buildSlaveInfoStruct(info map[string]string) (master SlaveInfo, 
 
 // SentinelSlaves takes a podname and returns a list of SlaveInfo structs for
 // each known slave.
-func (r *Redis) SentinelSlaves(podname string) (slaves []SlaveInfo) {
+func (r *Redis) SentinelSlaves(podname string) (slaves []SlaveInfo, err error) {
 	rp, err := r.ExecuteCommand("SENTINEL", "SLAVES", podname)
 	if err != nil {
 		fmt.Println("error on slaves command:", err)
@@ -173,16 +173,18 @@ func (r *Redis) SentinelSlaves(podname string) (slaves []SlaveInfo) {
 
 // SentinelMonitor executes the SENTINEL MONITOR command on the server
 // This is used to add pods to the sentinel configuration
-func (r *Redis) SentinelMonitor(podname string, ip string, port int, quorum int) error {
-	_, err := r.ExecuteCommand("SENTINEL", "MONITOR", podname, ip, port, quorum)
-	return err
+func (r *Redis) SentinelMonitor(podname string, ip string, port int, quorum int) (bool, error) {
+	res, err := r.ExecuteCommand("SENTINEL", "MONITOR", podname, ip, port, quorum)
+	ok, _ := res.BoolValue()
+	return ok, err
 }
 
 // SentinelRemove executes the SENTINEL REMOVE command on the server
 // This is used to remove pods to the sentinel configuration
-func (r *Redis) SentinelRemove(podname string) error {
-	_, err := r.ExecuteCommand("SENTINEL", "REMOVE", podname)
-	return err
+func (r *Redis) SentinelRemove(podname string) (bool, error) {
+	res, err := r.ExecuteCommand("SENTINEL", "REMOVE", podname)
+	ok, _ := res.BoolValue()
+	return ok, err
 }
 
 // SentinelSetString will set the value of skey to sval for a
@@ -206,6 +208,7 @@ func (r *Redis) SentinelSetPass(podname string, password string) error {
 	return err
 }
 
+// SentinelMasters returns the list of known masters
 func (r *Redis) SentinelMasters() (masters []MasterInfo, err error) {
 	rp, err := r.ExecuteCommand("SENTINEL", "MASTERS")
 	if err != nil {
@@ -223,6 +226,25 @@ func (r *Redis) SentinelMasters() (masters []MasterInfo, err error) {
 	return
 }
 
+// SentinelSentinels returns the data about known sentinels for the given
+// pod/master
+func (r *Redis) SentinelSentinels(master string) (sentinels []MasterInfo, err error) {
+	rp, err := r.ExecuteCommand("SENTINEL", "SENTINELS", master)
+	if err != nil {
+		return
+	}
+	podcount := len(rp.Multi)
+	for i := 0; i < podcount; i++ {
+		pod, err := rp.Multi[i].HashValue()
+		if err != nil {
+			log.Fatal("Error:", err)
+		}
+		minfo, err := r.buildMasterInfoStruct(pod)
+		sentinels = append(sentinels, minfo)
+	}
+	return
+}
+
 func (r *Redis) buildMasterInfoStruct(info map[string]string) (master MasterInfo, err error) {
 	s := reflect.ValueOf(&master).Elem()
 	typeOfT := s.Type()
@@ -231,11 +253,13 @@ func (r *Redis) buildMasterInfoStruct(info map[string]string) (master MasterInfo
 		f := s.Field(i)
 		tag := p.Tag.Get("redis")
 		if f.Type().Name() == "int" {
-			val, err := strconv.ParseInt(info[tag], 10, 64)
-			if err != nil {
-				fmt.Println("Unable to convert to integer from sentinel server:", tag, info[tag], err)
-			} else {
-				f.SetInt(val)
+			if info[tag] > "" {
+				val, err := strconv.ParseInt(info[tag], 10, 64)
+				if err != nil {
+					fmt.Println("Unable to convert to integer from sentinel server:", tag, info[tag], err)
+				} else {
+					f.SetInt(val)
+				}
 			}
 		}
 		if f.Type().Name() == "string" {
