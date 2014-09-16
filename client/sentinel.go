@@ -111,6 +111,24 @@ type SlaveInfo struct {
 	SlaveReplicationOffset int    `redis:"slave-repl-offset"`
 }
 
+// SentinelInfo represents the information returned from a "SENTINEL SENTINELS
+// <name>" command
+type SentinelInfo struct {
+	Name                  string `redis:"name"`
+	IP                    string `redis:"ip"`
+	Port                  int    `redis:"port"`
+	Runid                 string `redis:"runid"`
+	Flags                 string `redis:"flags"`
+	PendingCommands       int    `redis:"pending-commands"`
+	LastPingReply         int    `redis:"last-ping-reply"`
+	LastPingSent          int    `redis:"last-ping-sent"`
+	LastOkPingReply       int    `redis:"last-ok-ping-reply"`
+	DownAfterMilliseconds int    `redis:"down-after-milliseconds"`
+	LastHelloMessage      int    `redis:"last-hello-message"`
+	VotedLeader           string `redis:"voted-leader"`
+	VotedLeaderEpoch      int    `redis:"voted-leader-epoch"`
+}
+
 // buildSlaveInfoStruct builods the struct for a slave from the Redis slaves command
 func (r *Redis) buildSlaveInfoStruct(info map[string]string) (master SlaveInfo, err error) {
 	s := reflect.ValueOf(&master).Elem()
@@ -206,6 +224,24 @@ func (r *Redis) SentinelSetPass(podname string, password string) error {
 	return err
 }
 
+func (r *Redis) SentinelSentinels(podName string) (sentinels []SentinelInfo, err error) {
+	reply, err := r.ExecuteCommand("SENTINEL", "SENTINELS", podName)
+	if err != nil {
+		log.Print("Err in sentinels command:", err)
+		return
+	}
+	count := len(reply.Multi)
+	for i := 0; i < count; i++ {
+		data, err := reply.Multi[i].HashValue()
+		if err != nil {
+			log.Fatal("Error:", err)
+		}
+		sentinel, err := r.buildSentinelInfoStruct(data)
+		sentinels = append(sentinels, sentinel)
+	}
+	return
+}
+
 func (r *Redis) SentinelMasters() (masters []MasterInfo, err error) {
 	rp, err := r.ExecuteCommand("SENTINEL", "MASTERS")
 	if err != nil {
@@ -219,6 +255,43 @@ func (r *Redis) SentinelMasters() (masters []MasterInfo, err error) {
 		}
 		minfo, err := r.buildMasterInfoStruct(pod)
 		masters = append(masters, minfo)
+	}
+	return
+}
+
+func (r *Redis) buildSentinelInfoStruct(info map[string]string) (sentinel SentinelInfo, err error) {
+	s := reflect.ValueOf(&sentinel).Elem()
+	typeOfT := s.Type()
+	for i := 0; i < s.NumField(); i++ {
+		p := typeOfT.Field(i)
+		f := s.Field(i)
+		tag := p.Tag.Get("redis")
+		if f.Type().Name() == "int" {
+			val, err := strconv.ParseInt(info[tag], 10, 64)
+			if err != nil {
+				fmt.Println("Unable to convert to integer from sentinel server:", tag, info[tag], err)
+			} else {
+				f.SetInt(val)
+			}
+		}
+		if f.Type().Name() == "string" {
+			f.SetString(info[tag])
+		}
+		if f.Type().Name() == "bool" {
+			// This handles primarily the xxx_xx style fields in the return data from redis
+			if info[tag] != "" {
+				val, err := strconv.ParseInt(info[tag], 10, 64)
+				if err != nil {
+					println("Unable to convert to bool from sentinel server:", info[tag])
+					fmt.Println(info[tag])
+					fmt.Println("Error:", err)
+				} else {
+					if val > 0 {
+						f.SetBool(true)
+					}
+				}
+			}
+		}
 	}
 	return
 }
