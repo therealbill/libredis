@@ -140,7 +140,7 @@ func (r *Redis) buildSlaveInfoStruct(info map[string]string) (master SlaveInfo, 
 		if f.Type().Name() == "int" {
 			val, err := strconv.ParseInt(info[tag], 10, 64)
 			if err != nil {
-				println("Unable to convert to data from sentinel server:", info[tag], err)
+				//println("Unable to convert to data from sentinel server:", info[tag], err)
 			} else {
 				f.SetInt(val)
 			}
@@ -153,7 +153,7 @@ func (r *Redis) buildSlaveInfoStruct(info map[string]string) (master SlaveInfo, 
 			if info[tag] != "" {
 				val, err := strconv.ParseInt(info[tag], 10, 64)
 				if err != nil {
-					println("[bool] Unable to convert to data from sentinel server:", info[tag], err)
+					//println("[bool] Unable to convert to data from sentinel server:", info[tag], err)
 					fmt.Println("Error:", err)
 				} else {
 					if val > 0 {
@@ -203,6 +203,11 @@ func (r *Redis) SentinelRemove(podname string) (bool, error) {
 	res, err := r.ExecuteCommand("SENTINEL", "REMOVE", podname)
 	ok, _ := res.BoolValue()
 	return ok, err
+}
+
+func (r *Redis) SentinelReset(podname string) error {
+	_, err := r.ExecuteCommand("SENTINEL", "RESER", podname)
+	return err
 }
 
 // SentinelSetString will set the value of skey to sval for a
@@ -272,7 +277,7 @@ func (r *Redis) buildSentinelInfoStruct(info map[string]string) (sentinel Sentin
 		if f.Type().Name() == "int" {
 			val, err := strconv.ParseInt(info[tag], 10, 64)
 			if err != nil {
-				fmt.Println("Unable to convert to integer from sentinel server:", tag, info[tag], err)
+				//fmt.Println("Unable to convert to integer from sentinel server:", tag, info[tag], err)
 			} else {
 				f.SetInt(val)
 			}
@@ -285,7 +290,7 @@ func (r *Redis) buildSentinelInfoStruct(info map[string]string) (sentinel Sentin
 			if info[tag] != "" {
 				val, err := strconv.ParseInt(info[tag], 10, 64)
 				if err != nil {
-					println("Unable to convert to bool from sentinel server:", info[tag])
+					//println("Unable to convert to bool from sentinel server:", info[tag])
 					fmt.Println(info[tag])
 					fmt.Println("Error:", err)
 				} else {
@@ -324,7 +329,7 @@ func (r *Redis) buildMasterInfoStruct(info map[string]string) (master MasterInfo
 			if info[tag] != "" {
 				val, err := strconv.ParseInt(info[tag], 10, 64)
 				if err != nil {
-					println("Unable to convert to bool from sentinel server:", info[tag])
+					//println("Unable to convert to bool from sentinel server:", info[tag])
 					fmt.Println(info[tag])
 					fmt.Println("Error:", err)
 				} else {
@@ -340,9 +345,8 @@ func (r *Redis) buildMasterInfoStruct(info map[string]string) (master MasterInfo
 
 // SentinelMasterInfo returns the information about a pod or master
 func (r *Redis) SentinelMasterInfo(podname string) (master MasterInfo, err error) {
-	log.Println("get info for:", podname)
 	rp, err := r.ExecuteCommand("SENTINEL", "MASTER", podname)
-	if err != nil || len(rp.Error) > 0 {
+	if err != nil {
 		return master, err
 	}
 	info, err := rp.HashValue()
