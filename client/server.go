@@ -3,6 +3,7 @@ package client
 import (
 	"errors"
 	"io"
+	"fmt"
 	"net"
 	"strconv"
 
@@ -109,6 +110,16 @@ func (r *Redis) ConfigRewrite() error {
 // You can change both trivial parameters or switch from one to another persistence option using this command.
 func (r *Redis) ConfigSet(parameter, value string) error {
 	rp, err := r.ExecuteCommand("CONFIG", "SET", parameter, value)
+	if err != nil {
+		return err
+	}
+	return rp.OKValue()
+}
+
+// ConfigSetInt is a convenience wrapper for passing integers to ConfigSet
+func (r *Redis) ConfigSetInt(parameter string, value int) error {
+	sval := fmt.Sprintf("%d",value)
+	rp, err := r.ExecuteCommand("CONFIG", "SET", parameter, sval)
 	if err != nil {
 		return err
 	}
