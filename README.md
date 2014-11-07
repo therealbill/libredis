@@ -19,7 +19,7 @@ indicates features planned and/or in dev): are scheduled):
 Libredis is intended to be more than a simple client connection library.
 It will include Redis specific custom operations, Structures, and
 capabilities suitable for integrating with any Go code which interacts
-with Redis ranging from sinple CRUD operations to service management.
+with Redis ranging from simple CRUD operations to service management.
 
 ## Features
 
@@ -31,7 +31,7 @@ and rewritten for better performance.
 
 #### API Volatility
 
-Thoe original API, while better than other libraries, did not meet what
+The original API, while better than other libraries, did not meet what
 I felt the API should look like. The info command returned simple
 strings, any command which supported variadic arguments required them,
 and certain errors should be handled at a lower level and returned in a
@@ -83,7 +83,7 @@ older, use `SentinelInfo` instead of Info to handle this scenario.
 
 - [Redis Commands](http://redis.io/commands)
 - [Redis Protocol](http://redis.io/topics/protocol)
-- [Sentinel](http://redis.io/topics/sentinl)
+- [Sentinel](http://redis.io/topics/sentinel)
 - [GoDoc](http://godoc.org/github.com/therealbill/libredis)
 
 
