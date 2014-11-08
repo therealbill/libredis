@@ -3,7 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/therealbill/libredis?status.png)](https://godoc.org/github.com/therealbill/libredis)
 
 Libredis is a library for interacting with Redis. This includes (a '^'
-indicates features planned and/or in dev): are scheduled):
+indicates features planned and/or in dev):
 
 - client connection 
 - Sentinel interaction and management
