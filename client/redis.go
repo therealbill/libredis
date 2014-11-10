@@ -1,15 +1,17 @@
-// Package libredis is another redis client with full features which writter in golang
+// Package libredis/client is a redis client with full features
 //
+// It is written in and for Go
 // Protocol Specification: http://redis.io/topics/protocol.
 //
-// Redis reply has five types: status, error, integer, bulk, multi bulk.
-// A Status Reply is in the form of a single line string starting with "+" terminated by "\r\n".
-// Error Replies are very similar to Status Replies. The only difference is that the first byte is "-".
-// Integer reply is just a CRLF terminated string representing an integer, prefixed by a ":" byte.
-// Bulk replies are used by the server in order to return a single binary safe string up to 512 MB in length.
-// A Multi bulk reply is used to return an array of other replies.
-// Every element of a Multi Bulk Reply can be of any kind, including a nested Multi Bulk Reply.
-// So five reply type is defined:
+// Redis reply has five types: status, error, integer, bulk, multi bulk.  A
+// Status Reply is in the form of a single line string starting with "+"
+// terminated by "\r\n".  Error Replies are very similar to Status Replies. The
+// only difference is that the first byte is "-".  Integer reply is just a CRLF
+// terminated string representing an integer, prefixed by a ":" byte.  Bulk
+// replies are used by the server in order to return a single binary safe
+// string up to 512 MB in length.  A Multi bulk reply is used to return an
+// array of other replies.  Every element of a Multi Bulk Reply can be of any
+// kind, including a nested Multi Bulk Reply.  So five reply type is defined:
 //  const (
 //  	ErrorReply = iota
 //  	StatusReply
@@ -17,7 +19,7 @@
 //  	BulkReply
 //  	MultiReply
 //  )
-// And then a Reply struct which represent the redis response data is defined:
+// A Reply struct which represent the redis response data is defined:
 //  type Reply struct {
 //  	Type    int
 //  	Error   string
@@ -74,7 +76,7 @@
 //  func (p *Pipelined) Receive() (*Reply, error)
 //  func (p *Pipelined) ReceiveAll() ([]*Reply, error)
 //
-// Transaction, Lua Eval, Publish/Subscribe, Monitor, Scan, Sort are also supported.
+// Transactions, Lua Eval, Publish/Subscribe, Monitor, Scan, Sort are also supported.
 //
 package client
 
