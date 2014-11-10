@@ -1,6 +1,6 @@
 # libredis
 
-[![GoDoc](https://godoc.org/github.com/therealbill/libredis?status.png)](https://godoc.org/github.com/therealbill/libredis)
+[![GoDoc](https://godoc.org/github.com/TheRealBill/libredis?status.png)](https://godoc.org/github.com/TheRealBill/libredis)
 
 Libredis is a library for interacting with Redis. This includes (a '^'
 indicates features planned and/or in dev): are scheduled):
@@ -53,15 +53,15 @@ across the client API.
 #### Notables
 
 * Python Redis Client Like API
-* Support [Pipeling](http://godoc.org/github.com/therealbill/libredis#Pipelined)
-* Support [Transaction](http://godoc.org/github.com/therealbill/libredis#Transaction)
-* Support [Publish Subscribe](http://godoc.org/github.com/therealbill/libredis#PubSub)
-* Support [Lua Eval](http://godoc.org/github.com/therealbill/libredis#Redis.Eval)
-* Support [Connection Pool](http://godoc.org/github.com/therealbill/libredis#ConnPool)
-* Support [Dial URL-Like](http://godoc.org/github.com/therealbill/libredis#DialURL)
+* Support [Pipeling](http://godoc.org/github.com/TheRealBill/libredis#Pipelined)
+* Support [Transaction](http://godoc.org/github.com/TheRealBill/libredis#Transaction)
+* Support [Publish Subscribe](http://godoc.org/github.com/TheRealBill/libredis#PubSub)
+* Support [Lua Eval](http://godoc.org/github.com/TheRealBill/libredis#Redis.Eval)
+* Support [Connection Pool](http://godoc.org/github.com/TheRealBill/libredis#ConnPool)
+* Support [Dial URL-Like](http://godoc.org/github.com/TheRealBill/libredis#DialURL)
 * Support for Sentinel commands
 * Support Parsing Redis Info commands into Maps and structs
-* Support [monitor](http://godoc.org/github.com/therealbill/libredis#MonitorCommand), [sort](http://godoc.org/github.com/therealbill/libredis#SortCommand), [scan](http://godoc.org/github.com/therealbill/libredis#Redis.Scan), [slowlog](http://godoc.org/github.com/therealbill/libredis#SlowLog) .etc
+* Support [monitor](http://godoc.org/github.com/TheRealBill/libredis#MonitorCommand), [sort](http://godoc.org/github.com/TheRealBill/libredis#SortCommand), [scan](http://godoc.org/github.com/TheRealBill/libredis#Redis.Scan), [slowlog](http://godoc.org/github.com/TheRealBill/libredis#SlowLog) .etc
 
 
 ## Redis Info
@@ -84,7 +84,7 @@ older, use `SentinelInfo` instead of Info to handle this scenario.
 - [Redis Commands](http://redis.io/commands)
 - [Redis Protocol](http://redis.io/topics/protocol)
 - [Sentinel](http://redis.io/topics/sentinl)
-- [GoDoc](http://godoc.org/github.com/therealbill/libredis)
+- [GoDoc](http://godoc.org/github.com/TheRealBill/libredis)
 
 
 
