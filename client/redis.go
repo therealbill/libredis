@@ -403,9 +403,11 @@ func (r *Redis) dialConnection() (*connection, error) {
 }
 
 // ClosePool close the redis client under connection pool
-// this will close all the connections which in the pool
+// this will close all the connections in the pool
 func (r *Redis) ClosePool() {
-	r.pool.Close()
+	if r.pool != nil {
+		r.pool.Close()
+	}
 }
 
 const (
@@ -416,7 +418,7 @@ const (
 	DefaultAddress = ":6379"
 
 	// DefaultTimeout is the default value of connect timeout
-	DefaultTimeout = 15 * time.Second
+	DefaultTimeout = 2 * time.Second
 
 	// DefaultMaxIdle is the default value of connection pool size
 	DefaultMaxIdle = 1

@@ -2,8 +2,8 @@ package client
 
 import (
 	"errors"
-	"io"
 	"fmt"
+	"io"
 	"net"
 	"strconv"
 
@@ -118,7 +118,7 @@ func (r *Redis) ConfigSet(parameter, value string) error {
 
 // ConfigSetInt is a convenience wrapper for passing integers to ConfigSet
 func (r *Redis) ConfigSetInt(parameter string, value int) error {
-	sval := fmt.Sprintf("%d",value)
+	sval := fmt.Sprintf("%d", value)
 	rp, err := r.ExecuteCommand("CONFIG", "SET", parameter, sval)
 	if err != nil {
 		return err
@@ -335,7 +335,7 @@ type SlowLog struct {
 }
 
 // SlowLogGet returns slow logs.
-func (r *Redis) SlowLogGet(n int) ([]*SlowLog, error) {
+func (r *Redis) SlowLogGet(n int64) ([]*SlowLog, error) {
 	rp, err := r.ExecuteCommand("SLOWLOG", "GET", n)
 	if err != nil {
 		return nil, err
