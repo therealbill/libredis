@@ -82,6 +82,10 @@ type InfoStats struct {
 	TotalConnectionsRecevied int `redis:"total_connections_received"`
 	TotalCommandsProcessed   int `redis:"total_commands_processed"`
 	InstanteousOpsPerSecond  int `redis:"instantaneous_ops_per_sec"`
+	TotalNetInputBytes       int `redis:"total_net_input_bytes"`
+	TotalNetOutputBytes      int `redis:"total_net_output_bytes"`
+	InstanteousInputKbps     int `redis:"instantaneous_input_kbps"`
+	InstanteousOutputKbps    int `redis:"instantaneous_output_kbps"`
 	RejectedConnections      int `redis:"rejected_connections"`
 	SyncFill                 int `redis:"sync_full"`
 	SyncPartialOk            int `redis:"sync_partial_ok"`
