@@ -83,7 +83,7 @@ older, use `SentinelInfo` instead of Info to handle this scenario.
 
 - [Redis Commands](http://redis.io/commands)
 - [Redis Protocol](http://redis.io/topics/protocol)
-- [Sentinel](http://redis.io/topics/sentinl)
+- [Sentinel](http://redis.io/topics/sentinel)
 - [GoDoc](http://godoc.org/github.com/TheRealBill/libredis)
 
 
