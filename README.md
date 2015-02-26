@@ -1,6 +1,7 @@
 # libredis
 
 [![GoDoc](https://godoc.org/github.com/TheRealBill/libredis?status.png)](https://godoc.org/github.com/TheRealBill/libredis)
+[![Build Status](https://travis-ci.org/TheRealBill/libredis.svg?branch=master)](https://travis-ci.org/TheRealBill/libredis)
 
 Libredis is a library for interacting with Redis. This includes (a '^'
 indicates features planned and/or in dev):
