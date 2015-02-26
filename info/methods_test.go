@@ -2,35 +2,40 @@ package info
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"strings"
 	"testing"
-	"time"
-
-	rclient "github.com/therealbill/libredis/client"
 )
 
 var (
-	network  = "tcp"
-	address  = "127.0.0.1:6379"
-	db       = 1
-	password = ""
-	timeout  = 5 * time.Second
-	maxidle  = 1
-	r        *rclient.Redis
-	format   = "tcp://auth:%s@%s/%d?timeout=%s&maxidle=%d"
+	infostring_raw          string
+	infostring_commandstats string
+	infostring_keyspace     string
 )
 
 func init() {
-	client, err := rclient.DialWithConfig(&rclient.DialConfig{network, address, db, password, timeout, maxidle})
+	dat, err := ioutil.ReadFile("info-string.txt")
 	if err != nil {
-		panic(err)
+		log.Fatal("unable to read file: ", err)
 	}
-	r = client
+	infostring_raw = string(dat)
+
+	dat, err = ioutil.ReadFile("commandstats.txt")
+	if err != nil {
+		log.Fatal("unable to read file: ", err)
+	}
+	infostring_commandstats = string(dat)
+
+	dat, err = ioutil.ReadFile("info-string.txt")
+	if err != nil {
+		log.Fatal("unable to read file: ", err)
+	}
+	infostring_keyspace = string(dat)
 }
 
 func TestBuildMapFromInfoString(t *testing.T) {
-	raw, _ := r.InfoString("server")
-	trimmed := strings.TrimSpace(raw)
+	trimmed := strings.TrimSpace(infostring_raw)
 	rmap := BuildMapFromInfoString(trimmed)
 	if len(rmap["redis_version"]) == 0 {
 		t.Error("Version wasn't parsed")
@@ -39,16 +44,14 @@ func TestBuildMapFromInfoString(t *testing.T) {
 }
 
 func TestBuildInfoKeyspace(t *testing.T) {
-	keyinfo, _ := r.InfoString("keyspace")
-	space := BuildInfoKeyspace(keyinfo)
+	space := BuildInfoKeyspace(infostring_keyspace)
 	if len(space.Databases) == 0 {
 		t.Fail()
 	}
 }
 
 func TestCommandStats(t *testing.T) {
-	res, _ := r.InfoString("commandstats")
-	stats := CommandStats(res)
+	stats := CommandStats(infostring_commandstats)
 	if len(stats.Stats) == 0 {
 		t.Fail()
 	}
@@ -60,20 +63,16 @@ func TestCommandStats(t *testing.T) {
 }
 
 func TestKeyspaceStats(t *testing.T) {
-	r.Set("deletme", "1")
-	res, _ := r.InfoString("keyspace")
-	stats := KeyspaceStats(res)
+	stats := KeyspaceStats(infostring_keyspace)
 	if len(stats.Databases) == 0 {
 		fmt.Printf("%+v\n", stats)
 		t.Error("didn't get expected Keyspace Stats structure.")
 		t.Fail()
 	}
-	r.Del("deleteme")
 }
 
 func TestBuildAllInfoMap(t *testing.T) {
-	res, _ := r.InfoString("all")
-	alldata := BuildAllInfoMap(res)
+	alldata := BuildAllInfoMap(infostring_raw)
 	if len(alldata["CPU"]["used_cpu_sys"]) == 0 {
 		fmt.Printf("alldata.cpu.used_cpu_sys: %+v\n", alldata["CPU"]["used_cpu_sys"])
 		t.Error("didn't parse cpu.used_cpu_sys")
@@ -82,8 +81,7 @@ func TestBuildAllInfoMap(t *testing.T) {
 }
 
 func TestGetAllInfo(t *testing.T) {
-	res, _ := r.InfoString("all")
-	all := GetAllInfo(res)
+	all := GetAllInfo(infostring_raw)
 	// Server Checks
 	if all.Server.Arch_bits == 0 {
 		t.Error("Didn't parse Server.Arch_bits")
@@ -92,12 +90,7 @@ func TestGetAllInfo(t *testing.T) {
 }
 
 func TestInfo(t *testing.T) {
-	r.Set("deleteme", "1")
-	all, err := r.Info()
-	if err != nil {
-		t.Error(err)
-		t.Fail()
-	}
+	all := GetAllInfo(infostring_raw)
 	// Server Checks
 	if all.Server.Arch_bits == 0 {
 		t.Error("Didn't parse Server.Arch_bits")
@@ -142,7 +135,6 @@ func TestInfo(t *testing.T) {
 		fmt.Printf("Commandstats:\t%+v\n", all.Commandstats)
 		t.Fail()
 	}
-	r.Del("deleteme", "1")
 
 }
 
