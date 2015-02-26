@@ -7,4 +7,4 @@ go:
 services:
     - redis-server
 
-script: go test -tags integration ./client
+script: go test -tags integration ./client ./info
