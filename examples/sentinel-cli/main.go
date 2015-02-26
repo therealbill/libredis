@@ -21,7 +21,7 @@ var (
 func init() {
 	client, err := rclient.DialWithConfig(&rclient.DialConfig{Address: address})
 	if err != nil {
-		panic(err)
+		log.Fatal("Unable to connect to Sentinel instance:", err)
 	}
 	r = client
 }
@@ -31,6 +31,7 @@ func main() {
 	all, err := r.SentinelInfo()
 	if err != nil {
 		log.Fatal("unable to connect and get info:", err)
+		return
 	}
 	// Accessing the Server section is done via all.Server
 	fmt.Printf("Redis Server Version: %s\n", all.Server.Version)
@@ -46,25 +47,25 @@ func main() {
 	}
 	fmt.Printf("Managed Pod count: %d\n", len(pods))
 	for _, pod := range pods {
-		println("Pod Name:", pod.Name)
-		println("Pod Quorum:", pod.Quorum)
-		println("Pod IP:", pod.IP)
-		println("Pod Port:", pod.Port)
-		println("Pod Slave Count:", pod.NumSlaves)
+		fmt.Println("Pod Name:", pod.Name)
+		fmt.Println("Pod IP:", pod.IP)
+		fmt.Println("Pod Port:", pod.Port)
+		fmt.Println("Pod Slave Count:", pod.NumSlaves)
 		// We can easily to testing of the conditions reported
 		// Here we see if our master has any slaves connected This could be
 		// extended to talk to connected slaves to get their slave-priority.
 		// This would allow us to validate we have promotable slaves.
 		if pod.NumSlaves == 0 {
-			println("!!WARNING!!\n\tThis pod has no slaves. Failover is not possible!")
+			fmt.Println("!!WARNING!!\n\tThis pod has no slaves. Failover is not possible!")
 		}
-		println()
 		// Here we see if our sentinel constellation has quorum on this pod
+		fmt.Println("Pod Quorum:", pod.Quorum)
 		if pod.Quorum <= pod.NumOtherSentinels {
-			println("Quorum is possible")
+			fmt.Println("Quorum is possible")
 		} else {
-			fmt.Printf("!!CRITICAL!!\n\tQuorum is NOT possible! Need %d sentinels, have %d\n", pod.Quorum, pod.NumOtherSentinels)
+			fmt.Printf("!!CRITICAL!!\n\tQuorum is NOT possible! Need %d other sentinels, have %d\n", pod.Quorum, pod.NumOtherSentinels)
 		}
+		fmt.Println()
 	}
 
 }

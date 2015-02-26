@@ -1,0 +1,10 @@
+language: go
+
+go:
+    - 1.4
+    - 1.3
+    - tip
+services:
+    - redis
+
+script: go test -tags integration ./client
