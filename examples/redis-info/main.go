@@ -21,7 +21,7 @@ var (
 func init() {
 	client, err := rclient.Dial("127.0.0.1", 6379)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	r = client
 }

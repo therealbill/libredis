@@ -1,6 +1,7 @@
 # libredis
 
 [![GoDoc](https://godoc.org/github.com/TheRealBill/libredis?status.png)](https://godoc.org/github.com/TheRealBill/libredis)
+[![Build Status](https://travis-ci.org/TheRealBill/libredis.svg?branch=master)](https://travis-ci.org/TheRealBill/libredis)
 
 Libredis is a library for interacting with Redis. This includes (a '^'
 indicates features planned and/or in dev):
@@ -13,7 +14,7 @@ indicates features planned and/or in dev):
 - Redis INFO parsing
 - Inbuilt Sentinel discovery support^
 - Inbuilt Redis Cluster support^
-- Tested under Go 1.3 and Redis 2.8.13
+- Tested under Go 1.3, 1.4.1, and tip and Redis >=  2.8.13
 
 
 Libredis is intended to be more than a simple client connection library.
@@ -27,7 +28,7 @@ with Redis ranging from simple CRUD operations to service management.
 
 The client code is a fork from
 [Goredis](https://github.com/xuyu/goredis). The code is being cleaned up
-and rewritten for better performance.
+and rewritten for better performance and developer usability.
 
 #### API Volatility
 
@@ -83,7 +84,7 @@ older, use `SentinelInfo` instead of Info to handle this scenario.
 
 - [Redis Commands](http://redis.io/commands)
 - [Redis Protocol](http://redis.io/topics/protocol)
-- [Sentinel](http://redis.io/topics/sentinl)
+- [Sentinel](http://redis.io/topics/sentinel)
 - [GoDoc](http://godoc.org/github.com/TheRealBill/libredis)
 
 
