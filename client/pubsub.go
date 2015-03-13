@@ -27,7 +27,7 @@ type PubSub struct {
 
 // GetName returns the address/name of the sentinel we are connected to
 func (p *PubSub) GetName() string {
-	return p.redis.getName()
+	return p.redis.GetName()
 }
 
 // PubSub new a PubSub from *redis.
