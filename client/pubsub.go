@@ -25,6 +25,11 @@ type PubSub struct {
 	Channels map[string]bool
 }
 
+// GetName returns the address/name of the sentinel we are connected to
+func (p *PubSub) GetName() string {
+	return r.redis.getName()
+}
+
 // PubSub new a PubSub from *redis.
 func (r *Redis) PubSub() (*PubSub, error) {
 	c, err := r.pool.Get()

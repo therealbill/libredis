@@ -231,7 +231,7 @@ func (r *Redis) SentinelSetPass(podname string, password string) error {
 	return err
 }
 
-// SentinelMasters returns the list of known masters
+// SentinelSentinels returns the list of known Sentinels
 func (r *Redis) SentinelSentinels(podName string) (sentinels []SentinelInfo, err error) {
 	reply, err := r.ExecuteCommand("SENTINEL", "SENTINELS", podName)
 	if err != nil {
@@ -250,6 +250,7 @@ func (r *Redis) SentinelSentinels(podName string) (sentinels []SentinelInfo, err
 	return
 }
 
+// SentinelMasters returns the list of known pods
 func (r *Redis) SentinelMasters() (masters []MasterInfo, err error) {
 	rp, err := r.ExecuteCommand("SENTINEL", "MASTERS")
 	if err != nil {
@@ -263,6 +264,23 @@ func (r *Redis) SentinelMasters() (masters []MasterInfo, err error) {
 		}
 		minfo, err := r.buildMasterInfoStruct(pod)
 		masters = append(masters, minfo)
+	}
+	return
+}
+
+// SentinelMaster returns the master info for the given podname
+func (r *Redis) SentinelMaster(podname string) (master MasterInfo, err error) {
+	rp, err := r.ExecuteCommand("SENTINEL", "MASTER", podname)
+	if err != nil {
+		return
+	}
+	podcount := len(rp.Multi)
+	for i := 0; i < podcount; i++ {
+		pod, err := rp.Multi[i].HashValue()
+		if err != nil {
+			log.Fatal("Error:", err)
+		}
+		master, err = r.buildMasterInfoStruct(pod)
 	}
 	return
 }

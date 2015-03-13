@@ -22,6 +22,10 @@ func BuildAllInfoMap(infostring string) map[string]map[string]string {
 				splits := strings.Split(line, ":")
 				key := splits[0]
 				val := splits[1]
+				secmap := allmap[sectionname]
+				if secmap == nil {
+					allmap[sectionname] = make(map[string]string)
+				}
 				allmap[sectionname][key] = val
 			}
 		}

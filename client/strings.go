@@ -78,6 +78,18 @@ func (r *Redis) Get(key string) ([]byte, error) {
 	return rp.BytesValue()
 }
 
+// GetInt gets the integer value of key.
+// If the key does not exist the special value nil is returned.
+// An error is returned if the value stored at key is not a string,
+// because GET only handles string values.
+func (r *Redis) GetInt(key string) (int64, error) {
+	rp, err := r.ExecuteCommand("GET", key)
+	if err != nil {
+		return 0, err
+	}
+	return rp.IntegerValue()
+}
+
 // GetBit returns the bit value at offset in the string value stored at key.
 // When offset is beyond the string length,
 // the string is assumed to be a contiguous space with 0 bits.

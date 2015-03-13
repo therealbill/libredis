@@ -332,6 +332,11 @@ type Redis struct {
 	pool     *connPool
 }
 
+// GetName returns the name/address of the connected Redis instance
+func (r *Redis) GetName() string {
+	return r.address
+}
+
 // ExecuteCommand send any raw redis command and receive reply from redis server
 func (r *Redis) ExecuteCommand(args ...interface{}) (*Reply, error) {
 	c, err := r.pool.Get()
