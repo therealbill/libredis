@@ -57,7 +57,7 @@ func TestDiaURL(t *testing.T) {
 }
 
 func TestPackCommand(t *testing.T) {
-	res_string := "*3\r\n $3\r\n SET\r\n $3\r\n key\r\n $5\r\n value\r\n"
+	res_string := "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n"
 	res, err := packCommand("SET", "key", "value")
 	if err != nil {
 		t.Error(err)
