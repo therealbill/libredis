@@ -337,9 +337,19 @@ func (r *Redis) GetName() string {
 	return r.address
 }
 
+func (r *Redis) GetConnection() (*connection, error) {
+	c, err := r.pool.Get()
+	if err != nil {
+		return nil, err
+	}
+	return c, err
+}
+
 // ExecuteCommand send any raw redis command and receive reply from redis server
 func (r *Redis) ExecuteCommand(args ...interface{}) (*Reply, error) {
 	c, err := r.pool.Get()
+	deadline := time.Now().Add(r.timeout)
+	c.Conn.SetDeadline(deadline)
 	if err != nil {
 		return nil, err
 	}
@@ -379,6 +389,7 @@ func (r *Redis) dialConnection() (*connection, error) {
 	if err != nil {
 		return nil, err
 	}
+	//conn.SetWriteDeadline(r.timeout) // needs to be time.Time?
 	c := &connection{conn, bufio.NewReader(conn)}
 	if r.password != "" {
 		if err := c.SendCommand("AUTH", r.password); err != nil {
