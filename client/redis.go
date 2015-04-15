@@ -450,7 +450,29 @@ type DialConfig struct {
 	MaxIdle  int
 }
 
-// Dial new a redis client with just a Host and port
+// Dial up a redis client with just a Host:port string
+func DialAddress(address string) (*Redis, error) {
+	r := &Redis{
+		network:  "tcp",
+		address:  address,
+		db:       0,
+		password: "",
+		timeout:  DefaultTimeout,
+	}
+	r.pool = &connPool{
+		MaxIdle: DefaultMaxIdle,
+		Dial:    r.dialConnection,
+		idle:    list.New(),
+	}
+	conn, err := r.dialConnection()
+	if err != nil {
+		return nil, err
+	}
+	r.pool.Put(conn)
+	return r, nil
+}
+
+// Dial up a redis client with just a Host and port
 // This is particularly useful when considering Sentinel and cluster which
 // return IP/port pairs, not a string of both.
 func Dial(host string, port int) (*Redis, error) {

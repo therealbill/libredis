@@ -206,7 +206,9 @@ func (r *Redis) SentinelRemove(podname string) (bool, error) {
 }
 
 func (r *Redis) SentinelReset(podname string) error {
-	_, err := r.ExecuteCommand("SENTINEL", "RESER", podname)
+	res, err := r.ExecuteCommand("SENTINEL", "RESET", podname)
+	log.Print(res)
+	log.Print(res)
 	return err
 }
 
@@ -274,14 +276,11 @@ func (r *Redis) SentinelMaster(podname string) (master MasterInfo, err error) {
 	if err != nil {
 		return
 	}
-	podcount := len(rp.Multi)
-	for i := 0; i < podcount; i++ {
-		pod, err := rp.Multi[i].HashValue()
-		if err != nil {
-			log.Fatal("Error:", err)
-		}
-		master, err = r.buildMasterInfoStruct(pod)
+	pod, err := rp.HashValue()
+	if err != nil {
+		return
 	}
+	master, err = r.buildMasterInfoStruct(pod)
 	return
 }
 
