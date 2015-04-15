@@ -201,8 +201,12 @@ func (r *Redis) SentinelMonitor(podname string, ip string, port int, quorum int)
 // This is used to remove pods to the sentinel configuration
 func (r *Redis) SentinelRemove(podname string) (bool, error) {
 	res, err := r.ExecuteCommand("SENTINEL", "REMOVE", podname)
-	ok, _ := res.BoolValue()
-	return ok, err
+	rsp, _ := res.StatusValue()
+	if rsp == "OK" {
+		return true, err
+	} else {
+		return false, err
+	}
 }
 
 func (r *Redis) SentinelReset(podname string) error {
