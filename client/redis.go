@@ -204,6 +204,13 @@ func (c *connection) RecvReply() (*Reply, error) {
 	line = line[:len(line)-2]
 	switch line[0] {
 	case '-':
+		if strings.Contains(string(line[1:]), "NOAUTH") {
+			err = errors.New("authentication required")
+			return &Reply{
+				Type:  ErrorReply,
+				Error: string(line[1:]),
+			}, err
+		}
 		return &Reply{
 			Type:  ErrorReply,
 			Error: string(line[1:]),

@@ -15,3 +15,7 @@ func (r *Redis) Ping() error {
 	_, err := r.ExecuteCommand("PING")
 	return err
 }
+
+func (r *Redis) Address() string {
+	return r.address
+}
