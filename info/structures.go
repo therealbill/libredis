@@ -39,6 +39,11 @@ type InfoServer struct {
 	ConfigFile      string `redis:"config_file"`
 }
 
+// InfoCluster is a struct representing the Cluster section of Redis Info
+type InfoCluster struct {
+	Enabled bool
+}
+
 // InfoMemory is the struct returning the memory section for Redis Info
 type InfoMemory struct {
 	UsedMemory               int     `redis:"used_memory"`
