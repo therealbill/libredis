@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/therealbill/libredis/info"
+	"github.com/therealbill/libredis/structures"
 )
 
 // BgRewriteAof Instruct Redis to start an Append Only File rewrite process.
@@ -188,7 +189,7 @@ func (r *Redis) FlushDB() error {
 // Info returns information and statistics about the server
 // In RedisInfoAll struct see the github.com/therealbill/libredis/info package
 // for details
-func (r *Redis) Info() (sinfo info.RedisInfoAll, err error) {
+func (r *Redis) Info() (sinfo structures.RedisInfoAll, err error) {
 	rp, err := r.ExecuteCommand("info", "all")
 	if err != nil {
 		return
@@ -204,7 +205,7 @@ func (r *Redis) Info() (sinfo info.RedisInfoAll, err error) {
 // SentinelInfo returns information and statistics for a sentinel instance
 // In RedisInfoAll struct see the github.com/therealbill/libredis/info package
 // for details
-func (r *Redis) SentinelInfo() (sinfo info.RedisInfoAll, err error) {
+func (r *Redis) SentinelInfo() (sinfo structures.RedisInfoAll, err error) {
 	rp, err := r.ExecuteCommand("info")
 	if err != nil {
 		return

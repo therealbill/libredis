@@ -93,6 +93,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/therealbill/libredis/structures"
 )
 
 func packArgs(items ...interface{}) (args []interface{}) {
@@ -331,12 +333,15 @@ func (p *connPool) Put(c *connection) {
 // Redis client struct
 // Containers connection parameters and connection pool
 type Redis struct {
-	network  string
-	address  string
-	db       int
-	password string
-	timeout  time.Duration
-	pool     *connPool
+	network   string
+	address   string
+	db        int
+	password  string
+	timeout   time.Duration
+	pool      *connPool
+	keymap    map[string]string
+	Slots     []structures.ClusterSlot
+	Sentinels structures.SentinelList
 }
 
 // GetName returns the name/address of the connected Redis instance

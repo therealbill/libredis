@@ -5,132 +5,12 @@ import (
 	"log"
 	"reflect"
 	"strconv"
+
+	"github.com/therealbill/libredis/structures"
 )
 
-// MasterAddress is a small struct to provide connection information for a
-// Master as returned from get-master-addr-by-name
-type MasterAddress struct {
-	Host string
-	Port int
-}
-
-// MasterInfo is a struct providing the information available from sentinel
-// about a given master (aka pod)
-// The way this works is you tag the field with the name redis returns
-// and reflect is used in the methods which return this structure to populate
-// it with the data from Redis
-//
-// Note this means it will nee dto be updated when new fields are added in
-// sentinel. Fortunately this appears to be rare.
-//
-// Currently the list is:
-// 'pending-commands'
-// 'ip'
-// 'down-after-milliseconds'
-// 'role-reported'
-// 'runid'
-// 'port'
-// 'last-ok-ping-reply'
-// 'last-ping-sent'
-// 'failover-timeout'
-// 'config-epoch'
-// 'quorum'
-// 'role-reported-time'
-// 'last-ping-reply'
-// 'name'
-// 'parallel-syncs'
-// 'info-refresh'
-// 'flags'
-// 'num-slaves'
-// 'num-other-sentinels'
-type MasterInfo struct {
-	Name                  string `redis:"name"`
-	Port                  int    `redis:"port"`
-	NumSlaves             int    `redis:"num-slaves"`
-	Quorum                int    `redis:"quorum"`
-	NumOtherSentinels     int    `redis:"num-other-sentinels"`
-	ParallelSyncs         int    `redis:"parallel-syncs"`
-	Runid                 string `redis:"runid"`
-	IP                    string `redis:"ip"`
-	DownAfterMilliseconds int    `redis:"down-after-milliseconds"`
-	IsMasterDown          bool   `redis:"is-master-down"`
-	LastOkPingReply       int    `redis:"last-ok-ping-reply"`
-	RoleReportedTime      int    `redis:"role-reported-time"`
-	InfoRefresh           int    `redis:"info-refresh"`
-	RoleReported          string `redis:"role-reported"`
-	LastPingReply         int    `redis:"last-ping-reply"`
-	LastPingSent          int    `redis:"last-ping-sent"`
-	FailoverTimeout       int    `redis:"failover-timeout"`
-	ConfigEpoch           int    `redis:"config-epoch"`
-	Flags                 string `redis:"flags"`
-}
-
-// SlaveInfo is a struct for the results returned from slave queries,
-// specifically the individual entries of the  `sentinel slave <podname>`
-// command. As with the other Sentinel structs this may change and will need
-// updated for new entries
-// Currently the members defined by sentinel are as follows.
-// "name"
-// "ip"
-// "port"
-// "runid"
-// "flags"
-// "pending-commands"
-// "last-ping-sent"
-// "last-ok-ping-reply"
-// "last-ping-reply"
-// "down-after-milliseconds"
-// "info-refresh"
-// "role-reported"
-// "role-reported-time"
-// "master-link-down-time"
-// "master-link-status"
-// "master-host"
-// "master-port"
-// "slave-priority"
-// "slave-repl-offset"
-type SlaveInfo struct {
-	Name                   string `redis:"name"`
-	Host                   string `redis:"ip"`
-	Port                   int    `redis:"port"`
-	Runid                  string `redis:"runid"`
-	Flags                  string `redis:"flags"`
-	PendingCommands        int    `redis:"pending-commands"`
-	IsMasterDown           bool   `redis:"is-master-down"`
-	LastOkPingReply        int    `redis:"last-ok-ping-reply"`
-	RoleReportedTime       int    `redis:"role-reported-time"`
-	LastPingReply          int    `redis:"last-ping-reply"`
-	LastPingSent           int    `redis:"last-ping-sent"`
-	InfoRefresh            int    `redis:"info-refresh"`
-	RoleReported           string `redis:"role-reported"`
-	MasterLinkDownTime     int    `redis:"master-link-down-time"`
-	MasterLinkStatus       string `redis:"master-link-status"`
-	MasterHost             string `redis:"master-host"`
-	MasterPort             int    `redis:"master-port"`
-	SlavePriority          int    `redis:"slave-priority"`
-	SlaveReplicationOffset int    `redis:"slave-repl-offset"`
-}
-
-// SentinelInfo represents the information returned from a "SENTINEL SENTINELS
-// <name>" command
-type SentinelInfo struct {
-	Name                  string `redis:"name"`
-	IP                    string `redis:"ip"`
-	Port                  int    `redis:"port"`
-	Runid                 string `redis:"runid"`
-	Flags                 string `redis:"flags"`
-	PendingCommands       int    `redis:"pending-commands"`
-	LastPingReply         int    `redis:"last-ping-reply"`
-	LastPingSent          int    `redis:"last-ping-sent"`
-	LastOkPingReply       int    `redis:"last-ok-ping-reply"`
-	DownAfterMilliseconds int    `redis:"down-after-milliseconds"`
-	LastHelloMessage      int    `redis:"last-hello-message"`
-	VotedLeader           string `redis:"voted-leader"`
-	VotedLeaderEpoch      int    `redis:"voted-leader-epoch"`
-}
-
 // buildSlaveInfoStruct builods the struct for a slave from the Redis slaves command
-func (r *Redis) buildSlaveInfoStruct(info map[string]string) (master SlaveInfo, err error) {
+func (r *Redis) buildSlaveInfoStruct(info map[string]string) (master structures.SlaveInfo, err error) {
 	s := reflect.ValueOf(&master).Elem()
 	typeOfT := s.Type()
 	for i := 0; i < s.NumField(); i++ {
@@ -168,7 +48,7 @@ func (r *Redis) buildSlaveInfoStruct(info map[string]string) (master SlaveInfo, 
 
 // SentinelSlaves takes a podname and returns a list of SlaveInfo structs for
 // each known slave.
-func (r *Redis) SentinelSlaves(podname string) (slaves []SlaveInfo, err error) {
+func (r *Redis) SentinelSlaves(podname string) (slaves []structures.SlaveInfo, err error) {
 	rp, err := r.ExecuteCommand("SENTINEL", "SLAVES", podname)
 	if err != nil {
 		fmt.Println("error on slaves command:", err)
@@ -238,7 +118,7 @@ func (r *Redis) SentinelSetPass(podname string, password string) error {
 }
 
 // SentinelSentinels returns the list of known Sentinels
-func (r *Redis) SentinelSentinels(podName string) (sentinels []SentinelInfo, err error) {
+func (r *Redis) SentinelSentinels(podName string) (sentinels []structures.SentinelInfo, err error) {
 	reply, err := r.ExecuteCommand("SENTINEL", "SENTINELS", podName)
 	if err != nil {
 		log.Print("Err in sentinels command:", err)
@@ -257,7 +137,7 @@ func (r *Redis) SentinelSentinels(podName string) (sentinels []SentinelInfo, err
 }
 
 // SentinelMasters returns the list of known pods
-func (r *Redis) SentinelMasters() (masters []MasterInfo, err error) {
+func (r *Redis) SentinelMasters() (masters []structures.MasterInfo, err error) {
 	rp, err := r.ExecuteCommand("SENTINEL", "MASTERS")
 	if err != nil {
 		return
@@ -275,7 +155,7 @@ func (r *Redis) SentinelMasters() (masters []MasterInfo, err error) {
 }
 
 // SentinelMaster returns the master info for the given podname
-func (r *Redis) SentinelMaster(podname string) (master MasterInfo, err error) {
+func (r *Redis) SentinelMaster(podname string) (master structures.MasterInfo, err error) {
 	rp, err := r.ExecuteCommand("SENTINEL", "MASTER", podname)
 	if err != nil {
 		return
@@ -288,7 +168,7 @@ func (r *Redis) SentinelMaster(podname string) (master MasterInfo, err error) {
 	return
 }
 
-func (r *Redis) buildSentinelInfoStruct(info map[string]string) (sentinel SentinelInfo, err error) {
+func (r *Redis) buildSentinelInfoStruct(info map[string]string) (sentinel structures.SentinelInfo, err error) {
 	s := reflect.ValueOf(&sentinel).Elem()
 	typeOfT := s.Type()
 	for i := 0; i < s.NumField(); i++ {
@@ -325,7 +205,7 @@ func (r *Redis) buildSentinelInfoStruct(info map[string]string) (sentinel Sentin
 	return
 }
 
-func (r *Redis) buildMasterInfoStruct(info map[string]string) (master MasterInfo, err error) {
+func (r *Redis) buildMasterInfoStruct(info map[string]string) (master structures.MasterInfo, err error) {
 	s := reflect.ValueOf(&master).Elem()
 	typeOfT := s.Type()
 	for i := 0; i < s.NumField(); i++ {
@@ -365,7 +245,7 @@ func (r *Redis) buildMasterInfoStruct(info map[string]string) (master MasterInfo
 }
 
 // SentinelMasterInfo returns the information about a pod or master
-func (r *Redis) SentinelMasterInfo(podname string) (master MasterInfo, err error) {
+func (r *Redis) SentinelMasterInfo(podname string) (master structures.MasterInfo, err error) {
 	rp, err := r.ExecuteCommand("SENTINEL", "MASTER", podname)
 	if err != nil {
 		return master, err
@@ -376,7 +256,7 @@ func (r *Redis) SentinelMasterInfo(podname string) (master MasterInfo, err error
 
 // SentinelGetMaster returns the information needed to connect to the master of
 // a given pod
-func (r *Redis) SentinelGetMaster(podname string) (conninfo MasterAddress, err error) {
+func (r *Redis) SentinelGetMaster(podname string) (conninfo structures.MasterAddress, err error) {
 	rp, err := r.ExecuteCommand("SENTINEL", "get-master-addr-by-name", podname)
 	if err != nil {
 		return conninfo, err

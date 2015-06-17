@@ -6,6 +6,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/therealbill/libredis/structures"
 )
 
 // BuildAllInfoMap will call `INFO ALL` and return a mapping of map[string]string for each section in the output
@@ -54,8 +56,8 @@ func BuildMapFromInfoString(input string) map[string]string {
 }
 
 // BuildInfoKeyspace builds out the InfoKeyspace struct
-func BuildInfoKeyspace(raw string) InfoKeyspace {
-	var keyspace InfoKeyspace
+func BuildInfoKeyspace(raw string) structures.InfoKeyspace {
+	var keyspace structures.InfoKeyspace
 	lines := strings.Split(raw, "\r\n")
 	section := ""
 	for _, line := range lines {
@@ -88,7 +90,7 @@ func BuildInfoKeyspace(raw string) InfoKeyspace {
 }
 
 // CommandStats returns the InfoCommandStats struct
-func CommandStats(commandstatstring string) (cmdstat InfoCommandStats) {
+func CommandStats(commandstatstring string) (cmdstat structures.InfoCommandStats) {
 	lines := strings.Split(commandstatstring, "\r\n")
 	section := ""
 	for _, line := range lines {
@@ -120,7 +122,7 @@ func CommandStats(commandstatstring string) (cmdstat InfoCommandStats) {
 }
 
 // KeyspaceStats returns an InfoKeyspace struct for accessing keyspace stats
-func KeyspaceStats(infostring string) (stats InfoKeyspace) {
+func KeyspaceStats(infostring string) (stats structures.InfoKeyspace) {
 	trimmed := strings.TrimSpace(infostring)
 	stats = BuildInfoKeyspace(trimmed)
 	return
@@ -130,9 +132,9 @@ func KeyspaceStats(infostring string) (stats InfoKeyspace) {
 // strict for each INFO section. Since the cost difference of running INFO all
 // and INFO <section> is negligible it mkes sens to just return it all and let
 // the user select what info they want out of it.
-func GetAllInfo(infostring string) (info RedisInfoAll) {
+func GetAllInfo(infostring string) (info structures.RedisInfoAll) {
 	allmap := BuildAllInfoMap(infostring)
-	var alldata RedisInfoAll
+	var alldata structures.RedisInfoAll
 	all := reflect.ValueOf(&alldata).Elem()
 	for i := 0; i < all.NumField(); i++ {
 		p := all.Type().Field(i)
@@ -156,7 +158,7 @@ func GetAllInfo(infostring string) (info RedisInfoAll) {
 							idstring := strings.TrimLeft(k, "slave")
 							_, err := strconv.Atoi(string(idstring))
 							if err == nil {
-								var slave InfoSlaves
+								var slave structures.InfoSlaves
 								pairs := strings.Split(v, ",")
 								for _, pstring := range pairs {
 									pdata := strings.Split(pstring, "=")
