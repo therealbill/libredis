@@ -299,11 +299,11 @@ func (r *Redis) Save() error {
 // Perform a blocking SAVE if at least one save point is configured.
 // Flush the Append Only File if AOF is enabled.
 // Quit the server.
-func (r *Redis) Shutdown(save, noSave bool) error {
+func (r *Redis) Shutdown(save bool) error {
 	args := packArgs("SHUTDOWN")
 	if save {
 		args = append(args, "SAVE")
-	} else if noSave {
+	} else {
 		args = append(args, "NOSAVE")
 	}
 	rp, err := r.ExecuteCommand(args...)
