@@ -609,13 +609,17 @@ func (rp *Reply) IntegerValue() (int64, error) {
 // which are also extensively used in order to return true or false.
 // For instance commands like EXISTS or SISMEMBER will return 1 for true and 0 for false.
 func (rp *Reply) BoolValue() (bool, error) {
-	if rp.Type == ErrorReply {
+	switch rp.Type {
+	case ErrorReply:
 		return false, errors.New(rp.Error)
+	case IntegerReply:
+		return rp.Integer != 0, nil
+	case StatusReply:
+		rsp, _ := rp.StatusValue()
+		return rsp == "OK", nil
+	default:
+		return false, errors.New("invalid reply type, not Bool-able")
 	}
-	if rp.Type != IntegerReply {
-		return false, errors.New("invalid reply type, not integer")
-	}
-	return rp.Integer != 0, nil
 }
 
 // StatusValue indicates redis reply a status string
