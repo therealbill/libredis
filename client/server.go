@@ -42,6 +42,15 @@ func (r *Redis) ClientKill(ip string, port int) error {
 }
 
 // Role() returns the current role name on the server. Requires Redis >= 2.8.12
+func (r *Redis) Role() (sl []string, err error) {
+	rp, err := r.ExecuteCommand("ROLE")
+	if err != nil {
+		return sl, err
+	}
+	return rp.Multi[1].ListValue()
+}
+
+// RoleName() returns the current role name on the server. Requires Redis >= 2.8.12
 // This is a shorthand for those who only want the name of the role rather than
 // all the details.
 func (r *Redis) RoleName() (string, error) {
