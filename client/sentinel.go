@@ -75,8 +75,10 @@ func (r *Redis) SentinelSlaves(podname string) (slaves []structures.SlaveInfo, e
 // This is used to add pods to the sentinel configuration
 func (r *Redis) SentinelMonitor(podname string, ip string, port int, quorum int) (bool, error) {
 	res, err := r.ExecuteCommand("SENTINEL", "MONITOR", podname, ip, port, quorum)
-	ok, _ := res.BoolValue()
-	return ok, err
+	if err != nil {
+		return false, err
+	}
+	return res.BoolValue()
 }
 
 // SentinelRemove executes the SENTINEL REMOVE command on the server
