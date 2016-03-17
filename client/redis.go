@@ -480,12 +480,12 @@ type DialConfig struct {
 // Dial up a redis client with just a Host:port string
 func DialAddress(address string) (*Redis, error) {
 	r := &Redis{
-		network:      "tcp",
-		address:      address,
-		db:           0,
-		password:     "",
-		timeout:      DefaultTimeout,
-		tcp_keepaive: DefaultTCPKeepAlive,
+		network:       "tcp",
+		address:       address,
+		db:            0,
+		password:      "",
+		timeout:       DefaultTimeout,
+		tcp_keepalive: DefaultTCPKeepAlive,
 	}
 	r.pool = &connPool{
 		MaxIdle: DefaultMaxIdle,
