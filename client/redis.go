@@ -84,9 +84,11 @@ import (
 	"bufio"
 	"container/list"
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"net/url"
 	"reflect"
@@ -414,13 +416,21 @@ func (r *Redis) dialConnection() (*connection, error) {
 	}
 	if r.SSL {
 		var config tls.Config
-		if (r.certFile > "") || (r.serverName > "") {
+		if (r.certFile > "") || (r.serverName > "") || (r.caFile > "") {
 			if r.certFile > "" {
 				cert, err := tls.LoadX509KeyPair(r.certFile, r.keyFile)
 				if err != nil {
 					return nil, err
 				}
 				config = tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: r.SkipVerify, ServerName: r.serverName}
+			} else if r.caFile > "" {
+				certs := x509.NewCertPool()
+				pemData, err := ioutil.ReadFile(r.caFile)
+				if err != nil {
+					return nil, err
+				}
+				certs.AppendCertsFromPEM(pemData)
+				config = tls.Config{InsecureSkipVerify: r.SkipVerify, ServerName: r.serverName, RootCAs: certs}
 			} else {
 				config = tls.Config{InsecureSkipVerify: r.SkipVerify, ServerName: r.serverName}
 			}
