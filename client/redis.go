@@ -381,9 +381,6 @@ func (r *Redis) ExecuteCommand(args ...interface{}) (*Reply, error) {
 		}
 	}
 	rp, err := c.RecvReply()
-	if rp.Error > "" {
-		return rp, errors.New(rp.Error)
-	}
 	if err != nil {
 		if err != io.EOF {
 			return nil, err
@@ -396,6 +393,9 @@ func (r *Redis) ExecuteCommand(args ...interface{}) (*Reply, error) {
 			return nil, err
 		}
 		return c.RecvReply()
+	}
+	if rp.Error > "" {
+		return rp, errors.New(rp.Error)
 	}
 	return rp, err
 }
