@@ -544,9 +544,6 @@ func DialWithConfig(cfg *DialConfig) (*Redis, error) {
 	if cfg.MaxIdle == 0 {
 		cfg.MaxIdle = DefaultMaxIdle
 	}
-	if cfg.TCPKeepAlive == 0 {
-		cfg.TCPKeepAlive = DefaultTCPKeepAlive
-	}
 	r := &Redis{
 		network:      cfg.Network,
 		address:      cfg.Address,
