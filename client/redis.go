@@ -333,16 +333,16 @@ func (p *connPool) Put(c *connection) {
 // Redis client struct
 // Containers connection parameters and connection pool
 type Redis struct {
-	network       string
-	address       string
-	db            int
-	password      string
-	timeout       time.Duration
-	tcp_keepalive int
-	pool          *connPool
-	keymap        map[string]string
-	Slots         []structures.ClusterSlot
-	Sentinels     structures.SentinelList
+	network      string
+	address      string
+	db           int
+	password     string
+	timeout      time.Duration
+	tcpKeepAlive int
+	pool         *connPool
+	keymap       map[string]string
+	Slots        []structures.ClusterSlot
+	Sentinels    structures.SentinelList
 }
 
 // GetName returns the name/address of the connected Redis instance
@@ -407,10 +407,10 @@ func (r *Redis) dialConnection() (*connection, error) {
 	}
 	//conn.SetWriteDeadline(r.timeout) // needs to be time.Time?
 	// Enable TCP Keepalive (if possible)
-	if r.tcp_keepalive > 0 {
+	if r.tcpKeepAlive > 0 {
 		if tc, ok := conn.(*net.TCPConn); ok {
 			tc.SetKeepAlive(true)
-			tc.SetKeepAlivePeriod(time.Duration(r.tcp_keepalive) * time.Second)
+			tc.SetKeepAlivePeriod(time.Duration(r.tcpKeepAlive) * time.Second)
 		}
 	}
 	c := &connection{conn, bufio.NewReader(conn)}
@@ -480,12 +480,12 @@ type DialConfig struct {
 // Dial up a redis client with just a Host:port string
 func DialAddress(address string) (*Redis, error) {
 	r := &Redis{
-		network:       "tcp",
-		address:       address,
-		db:            0,
-		password:      "",
-		timeout:       DefaultTimeout,
-		tcp_keepalive: DefaultTCPKeepAlive,
+		network:      "tcp",
+		address:      address,
+		db:           0,
+		password:     "",
+		timeout:      DefaultTimeout,
+		tcpKeepAlive: DefaultTCPKeepAlive,
 	}
 	r.pool = &connPool{
 		MaxIdle: DefaultMaxIdle,
@@ -506,12 +506,12 @@ func DialAddress(address string) (*Redis, error) {
 func Dial(host string, port int) (*Redis, error) {
 	address := fmt.Sprintf("%s:%d", host, port)
 	r := &Redis{
-		network:       "tcp",
-		address:       address,
-		db:            0,
-		password:      "",
-		timeout:       DefaultTimeout,
-		tcp_keepalive: DefaultTCPKeepAlive,
+		network:      "tcp",
+		address:      address,
+		db:           0,
+		password:     "",
+		timeout:      DefaultTimeout,
+		tcpKeepAlive: DefaultTCPKeepAlive,
 	}
 	r.pool = &connPool{
 		MaxIdle: DefaultMaxIdle,
@@ -548,12 +548,12 @@ func DialWithConfig(cfg *DialConfig) (*Redis, error) {
 		cfg.TCPKeepAlive = DefaultTCPKeepAlive
 	}
 	r := &Redis{
-		network:       cfg.Network,
-		address:       cfg.Address,
-		db:            cfg.Database,
-		password:      cfg.Password,
-		timeout:       cfg.Timeout,
-		tcp_keepalive: cfg.TCPKeepAlive,
+		network:      cfg.Network,
+		address:      cfg.Address,
+		db:           cfg.Database,
+		password:     cfg.Password,
+		timeout:      cfg.Timeout,
+		tcpKeepAlive: cfg.TCPKeepAlive,
 	}
 	r.pool = &connPool{
 		MaxIdle: cfg.MaxIdle,
@@ -592,11 +592,11 @@ func DialURL(rawurl string) (*Redis, error) {
 	if err != nil {
 		return nil, err
 	}
-	tcp_keepalive, err := strconv.Atoi(ul.Query().Get("tcp_keepalive"))
+	tcpKeepAlive, err := strconv.Atoi(ul.Query().Get("tcpKeepAlive"))
 	if err != nil {
 		return nil, err
 	}
-	return DialWithConfig(&DialConfig{ul.Scheme, ul.Host, db, password, timeout, maxidle, tcp_keepalive})
+	return DialWithConfig(&DialConfig{ul.Scheme, ul.Host, db, password, timeout, maxidle, tcpKeepAlive})
 }
 
 // Reply Type: Status, Integer, Bulk, Multi Bulk
