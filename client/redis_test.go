@@ -20,7 +20,7 @@ var (
 )
 
 func init() {
-	client, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, tcpKeepAlive})
+	client, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, false, false, "", "", "", "", tcpKeepAlive})
 	if err != nil {
 		panic(err)
 	}
@@ -28,23 +28,25 @@ func init() {
 }
 
 func TestDial(t *testing.T) {
-	redis, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, tcpKeepAlive})
+	client, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, false, false, "", "", "", "", tcpKeepAlive})
 	if err != nil {
 		t.Error(err)
-	} else if err := redis.Ping(); err != nil {
+	} else if err := client.Ping(); err != nil {
 		t.Error(err)
 	}
-	redis.pool.Close()
+	client.pool.Close()
 }
 
 func TestDialTimeout(t *testing.T) {
-	redis, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, tcpKeepAlive})
+	client, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, false, false, "", "", "", "", tcpKeepAlive})
 	if err != nil {
 		t.Error(err)
-	} else if err := redis.Ping(); err != nil {
-		t.Error(err)
+	} else {
+		if err := client.Ping(); err != nil {
+			t.Error(err)
+		}
 	}
-	redis.pool.Close()
+	client.pool.Close()
 }
 
 func TestDiaURL(t *testing.T) {

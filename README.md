@@ -63,6 +63,7 @@ across the client API.
 * Support for Sentinel commands
 * Support Parsing Redis Info commands into Maps and structs
 * Support [monitor](http://godoc.org/github.com/TheRealBill/libredis#MonitorCommand), [sort](http://godoc.org/github.com/TheRealBill/libredis#SortCommand), [scan](http://godoc.org/github.com/TheRealBill/libredis#Redis.Scan), [slowlog](http://godoc.org/github.com/TheRealBill/libredis#SlowLog) .etc
+* SSL Support! If you have a provider or proxy providing an SSL endpoint you can now connect to it via libredis.
 
 
 ## Redis Info

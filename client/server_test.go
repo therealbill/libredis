@@ -1,6 +1,7 @@
 package client
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
@@ -17,9 +18,9 @@ func TestBgSave(t *testing.T) {
 	// Not ideal but it keeps the test simple
 	time.Sleep(2 * time.Second)
 	if err := r.BgSave(); err != nil {
-		//if !strings.Contains(err.Error(), "while AOF log rewriting") {
-		t.Error(err)
-		//}
+		if !strings.Contains(err.Error(), "while AOF log rewriting") {
+			t.Error(err)
+		}
 	}
 }
 
@@ -150,7 +151,9 @@ func TestMonitor(t *testing.T) {
 
 func TestSave(t *testing.T) {
 	if err := r.Save(); err != nil {
-		t.Error(err)
+		if !strings.Contains(err.Error(), "ERR Background save already in progress") {
+			t.Error(err)
+		}
 	}
 }
 

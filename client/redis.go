@@ -84,9 +84,12 @@ package client
 import (
 	"bufio"
 	"container/list"
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"net/url"
 	"reflect"
@@ -344,6 +347,12 @@ type Redis struct {
 	keymap       map[string]string
 	Slots        []structures.ClusterSlot
 	Sentinels    structures.SentinelList
+	SSL          bool
+	certFile     string
+	keyFile      string
+	caFile       string
+	SkipVerify   bool
+	serverName   string
 }
 
 // GetName returns the name/address of the connected Redis instance
@@ -402,9 +411,38 @@ func (r *Redis) ExecuteCommand(args ...interface{}) (*Reply, error) {
 }
 
 func (r *Redis) dialConnection() (*connection, error) {
-	conn, err := net.DialTimeout(r.network, r.address, r.timeout)
+	var conn net.Conn
+	ipconn, err := net.DialTimeout(r.network, r.address, r.timeout)
 	if err != nil {
 		return nil, err
+	}
+	if r.SSL {
+		var config tls.Config
+		if (r.certFile > "") || (r.serverName > "") || (r.caFile > "") {
+			if r.certFile > "" {
+				cert, err := tls.LoadX509KeyPair(r.certFile, r.keyFile)
+				if err != nil {
+					return nil, err
+				}
+				config = tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: r.SkipVerify, ServerName: r.serverName}
+			} else if r.caFile > "" {
+				certs := x509.NewCertPool()
+				pemData, err := ioutil.ReadFile(r.caFile)
+				if err != nil {
+					return nil, err
+				}
+				certs.AppendCertsFromPEM(pemData)
+				config = tls.Config{InsecureSkipVerify: r.SkipVerify, ServerName: r.serverName, RootCAs: certs}
+			} else {
+				config = tls.Config{InsecureSkipVerify: r.SkipVerify, ServerName: r.serverName}
+			}
+			conn = tls.Client(ipconn, &config)
+		} else {
+			config = tls.Config{InsecureSkipVerify: r.SkipVerify}
+			conn = tls.Client(ipconn, &config)
+		}
+	} else {
+		conn = ipconn
 	}
 	//conn.SetWriteDeadline(r.timeout) // needs to be time.Time?
 	// Enable TCP Keepalive (if possible)
@@ -475,6 +513,12 @@ type DialConfig struct {
 	Password     string
 	Timeout      time.Duration
 	MaxIdle      int
+	SkipVerify   bool
+	UseSSL       bool
+	CAFile       string
+	KeyFile      string
+	CertFile     string
+	ServerName   string
 	TCPKeepAlive int
 }
 
@@ -551,6 +595,12 @@ func DialWithConfig(cfg *DialConfig) (*Redis, error) {
 		db:           cfg.Database,
 		password:     cfg.Password,
 		timeout:      cfg.Timeout,
+		SSL:          cfg.UseSSL,
+		SkipVerify:   cfg.SkipVerify,
+		keyFile:      cfg.KeyFile,
+		certFile:     cfg.CertFile,
+		caFile:       cfg.CAFile,
+		serverName:   cfg.ServerName,
 		tcpKeepAlive: cfg.TCPKeepAlive,
 	}
 	r.pool = &connPool{
@@ -594,7 +644,7 @@ func DialURL(rawurl string) (*Redis, error) {
 	if err != nil {
 		return nil, err
 	}
-	return DialWithConfig(&DialConfig{ul.Scheme, ul.Host, db, password, timeout, maxidle, tcpKeepAlive})
+	return DialWithConfig(&DialConfig{ul.Scheme, ul.Host, db, password, timeout, maxidle, false, false, "", "", "", "", tcpKeepAlive})
 }
 
 // Reply Type: Status, Integer, Bulk, Multi Bulk
