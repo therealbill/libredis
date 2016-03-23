@@ -16,7 +16,7 @@ var (
 	tcpKeepAlive = 10
 	r            *Redis
 
-	format = "tcp://auth:%s@%s/%d?timeout=%s&maxidle=%d"
+	format = "tcp://auth:%s@%s/%d?timeout=%s&maxidle=%d&tcpKeepAlive=%d"
 )
 
 func init() {
