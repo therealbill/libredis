@@ -7,19 +7,20 @@ import (
 )
 
 var (
-	network  = "tcp"
-	address  = "127.0.0.1:6379"
-	db       = 1
-	password = ""
-	timeout  = 5 * time.Second
-	maxidle  = 1
-	r        *Redis
+	network      = "tcp"
+	address      = "127.0.0.1:6379"
+	db           = 1
+	password     = ""
+	timeout      = 5 * time.Second
+	maxidle      = 1
+	tcpKeepAlive = 10
+	r            *Redis
 
-	format = "tcp://auth:%s@%s/%d?timeout=%s&maxidle=%d"
+	format = "tcp://auth:%s@%s/%d?timeout=%s&maxidle=%d&tcpKeepAlive=%d"
 )
 
 func init() {
-	client, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, false, false, "", "", "", ""})
+	client, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, false, false, "", "", "", "", tcpKeepAlive})
 	if err != nil {
 		panic(err)
 	}
@@ -27,27 +28,29 @@ func init() {
 }
 
 func TestDial(t *testing.T) {
-	redis, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, false, false, "", "", "", ""})
+	client, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, false, false, "", "", "", "", tcpKeepAlive})
 	if err != nil {
 		t.Error(err)
-	} else if err := redis.Ping(); err != nil {
+	} else if err := client.Ping(); err != nil {
 		t.Error(err)
 	}
-	redis.pool.Close()
+	client.pool.Close()
 }
 
 func TestDialTimeout(t *testing.T) {
-	redis, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, false, false, "", "", "", ""})
+	client, err := DialWithConfig(&DialConfig{network, address, db, password, timeout, maxidle, false, false, "", "", "", "", tcpKeepAlive})
 	if err != nil {
 		t.Error(err)
-	} else if err := redis.Ping(); err != nil {
-		t.Error(err)
+	} else {
+		if err := client.Ping(); err != nil {
+			t.Error(err)
+		}
 	}
-	redis.pool.Close()
+	client.pool.Close()
 }
 
 func TestDiaURL(t *testing.T) {
-	redis, err := DialURL(fmt.Sprintf(format, password, address, db, timeout.String(), maxidle))
+	redis, err := DialURL(fmt.Sprintf(format, password, address, db, timeout.String(), maxidle, tcpKeepAlive))
 	if err != nil {
 		t.Fatal(err)
 	} else if err := redis.Ping(); err != nil {
