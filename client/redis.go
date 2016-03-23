@@ -45,7 +45,7 @@
 //  client, err := Dial()
 //  client, err := Dial(&DialConfig{Address: "127.0.0.1:6379"})
 //  client, err := Dial(&DialConfig{"tcp", "127.0.0.1:6379", 0, "", 10*time.Second, 10})
-//  client, err := DialURL("tcp://auth:password@127.0.0.1:6379/0?timeout=10s&maxidle=1")
+//  client, err := DialURL("tcp://auth:password@127.0.0.1:6379/0?timeout=10s&maxidle=1&tcpKeepAlive=15")
 //
 // DialConfig can also take named options for connection config:
 //   config := &DialConfig {
@@ -55,6 +55,7 @@
 //     Password: "yourpasswordhere"
 //     Timeout:  10*time.Second,
 //     MaxIdle:  10
+//     TCPKeepAlive: 15
 //   }
 //
 // Try a redis command is simple too, let's do GET/SET:
