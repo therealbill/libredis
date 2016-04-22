@@ -26,9 +26,11 @@ type InfoServer struct {
 	Version         string `redis:"redis_version"`
 	Git_sha1        int    `redis:"redis_git_sha1"`
 	Git_dirty       bool   `redis:"redis_git_dirty"`
+	RedisBuildId    string `redis:"redis_build_id"`
 	Mode            string `redis:"redis_mode"`
 	OS              string `redis:"os"`
 	Arch_bits       int    `redis:"arch_bits"`
+	Multiplexing    string `redis:"multiplexing_api"`
 	GCC_version     string `redis:"gcc_version"`
 	ProcessId       int    `redis:"process_id"`
 	TCPPort         int    `redis:"tcp_port"`
@@ -36,6 +38,7 @@ type InfoServer struct {
 	UptimeInDays    int    `redis:"uptime_in_days"`
 	Hz              int    `redis:"hz"`
 	LRU_clock       int    `redis:"lru_clock"`
+	Executable      string `redis:"executable"`
 	ConfigFile      string `redis:"config_file"`
 }
 
@@ -51,7 +54,13 @@ type InfoMemory struct {
 	UsedMemoryRss            int     `redis:"used_memory_rss"`
 	UsedMemoryPeak           int     `redis:"used_memory_peak"`
 	UsedMemoryPeakHuman      string  `redis:"used_memory_peak_human"`
+	TotalSystemMemory        int     `redis:"total_system_memory"`
+	TotalSystemMemoryHuman   string  `redis:"total_system_memory_human"`
 	UsedMemoryLua            int     `redis:"used_memory_lua"`
+	UsedMemoryLuaHuman       int     `redis:"used_memory_lua_human"`
+	MaxMemory                int     `redis:"maxmemory"`
+	MaxMemoryHuman           int     `redis:"maxmemory_human"`
+	MaxMemoryPolicy          int     `redis:"maxmemory_policy"`
 	MemoryFragmentationRatio float64 `redis:"mem_fragmentation_ratio"`
 	MemoryAllocator          string  `redis:"mem_allocator"`
 }
@@ -92,7 +101,7 @@ type InfoStats struct {
 	InstanteousInputKbps     float64 `redis:"instantaneous_input_kbps"`
 	InstanteousOutputKbps    float64 `redis:"instantaneous_output_kbps"`
 	RejectedConnections      int     `redis:"rejected_connections"`
-	SyncFill                 int     `redis:"sync_full"`
+	SyncFull                 int     `redis:"sync_full"`
 	SyncPartialOk            int     `redis:"sync_partial_ok"`
 	SyncPartialErr           int     `redis:"sync_partial_err"`
 	ExpiredKeys              int     `redis:"expired_keys"`
@@ -102,6 +111,7 @@ type InfoStats struct {
 	PubSubChannels           int     `redis:"pubsub_channels"`
 	PubSubPatterns           int     `redis:"pubsub_patterns"`
 	LatestForkUsec           int     `redis:"latest_fork_usec"`
+	MigrateCachedSockets     int     `redis:"migrate_cached_sockets"`
 }
 
 // InfoReplication represents the Replication section of Redis INFO
