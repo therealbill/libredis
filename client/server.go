@@ -422,3 +422,27 @@ func (r *Redis) Time() ([]string, error) {
 	}
 	return rp.ListValue()
 }
+
+// Command returns the Redis command info structures
+func (r *Redis) Command() (comms []structures.CommandEntry, err error) {
+	rp, err := r.ExecuteCommand("COMMAND")
+	if err != nil {
+		return nil, err
+	}
+	for _, subrp := range rp.Multi {
+		name, _ := subrp.Multi[0].StringValue()
+		arity, _ := subrp.Multi[1].IntegerValue()
+		first, _ := subrp.Multi[3].IntegerValue()
+		last, _ := subrp.Multi[4].IntegerValue()
+		repeat, _ := subrp.Multi[5].IntegerValue()
+		ce := structures.CommandEntry{Name: name, Arity: arity, FirstKey: first, LastKey: last, RepeatCount: repeat}
+		flagmap := make(map[string]bool)
+		for _, crp := range subrp.Multi[2].Multi {
+			flag, _ := crp.StatusValue()
+			flagmap[flag] = true
+		}
+		ce.Flags = flagmap
+		comms = append(comms, ce)
+	}
+	return
+}
