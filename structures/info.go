@@ -93,7 +93,7 @@ type InfoPersistence struct {
 
 // InfoStats represents the Stats section of Redis INFO
 type InfoStats struct {
-	TotalConnectionsRecevied int     `redis:"total_connections_received"`
+	TotalConnectionsReceived int     `redis:"total_connections_received"`
 	TotalCommandsProcessed   int     `redis:"total_commands_processed"`
 	InstanteousOpsPerSecond  int     `redis:"instantaneous_ops_per_sec"`
 	TotalNetInputBytes       int     `redis:"total_net_input_bytes"`
@@ -138,7 +138,7 @@ type InfoReplication struct {
 type InfoCPU struct {
 	UsedCPUSystem       float64 `redis:"used_cpu_sys"`
 	UsedCPUUser         float64 `redis:"used_cpu_user"`
-	UsedCPUChilden      float64 `redis:"used_cpu_sys_children"`
+	UsedCPUChildren     float64 `redis:"used_cpu_sys_children"`
 	UsedCPUUserChildren float64 `redis:"used_cpu_user_children"`
 }
 
