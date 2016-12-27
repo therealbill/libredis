@@ -7,6 +7,9 @@ services:
 
 script: go test -tags integration ./client ./info
 
-
 notifications:
   slack: thebaldguy:nUVn1pY1Owp88utA4dprrCMO
+
+addons:
+    code_climate:
+        repo_token: fb8a148929c2f0c657c92e7d7297f3c028b29978fd1680a997dc0664c481cbb1
