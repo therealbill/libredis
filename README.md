@@ -1,5 +1,6 @@
 # libredis
 
+[![Code Climate](https://codeclimate.com/github/therealbill/libredis/badges/gpa.svg)](https://codeclimate.com/github/therealbill/libredis)
 [![GoDoc](https://godoc.org/github.com/TheRealBill/libredis?status.png)](https://godoc.org/github.com/TheRealBill/libredis)
 [![Build Status](https://travis-ci.org/TheRealBill/libredis.svg?branch=master)](https://travis-ci.org/TheRealBill/libredis)
 
