@@ -1,7 +1,13 @@
 ---
 engines:
-  fixme:
+  golint:
     enabled: true
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - golang
 ratings:
-  paths: []
+  paths:
+    - "**.go"
 exclude_paths: []
