@@ -15,7 +15,7 @@ indicates features planned and/or in dev):
 - Redis INFO parsing
 - Inbuilt Sentinel discovery support^
 - Inbuilt Redis Cluster support^
-- Tested under Go 1.3, 1.4.1, and tip and Redis >=  2.8.13
+- Tested under Go 1.24+ and Redis >= 2.8.13
 
 
 Libredis is intended to be more than a simple client connection library.
