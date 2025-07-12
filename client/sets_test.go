@@ -187,3 +187,22 @@ func TestSScan(t *testing.T) {
 		t.Fail()
 	}
 }
+
+// Test for new Phase 1 SMISMEMBER command
+func TestSMIsMember(t *testing.T) {
+	r.Del("myset")
+	r.SAdd("myset", "one", "two", "three")
+	
+	results, err := r.SMIsMember("myset", "one", "four", "two")
+	if err != nil {
+		t.Error(err)
+	}
+	
+	if len(results) != 3 {
+		t.Error("Expected 3 results, got", len(results))
+	}
+	
+	if !results[0] || results[1] || !results[2] {
+		t.Error("Unexpected membership results")
+	}
+}

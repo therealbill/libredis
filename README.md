@@ -65,7 +65,66 @@ across the client API.
 * Support Parsing Redis Info commands into Maps and structs
 * Support [monitor](http://godoc.org/github.com/TheRealBill/libredis#MonitorCommand), [sort](http://godoc.org/github.com/TheRealBill/libredis#SortCommand), [scan](http://godoc.org/github.com/TheRealBill/libredis#Redis.Scan), [slowlog](http://godoc.org/github.com/TheRealBill/libredis#SlowLog) .etc
 * SSL Support! If you have a provider or proxy providing an SSL endpoint you can now connect to it via libredis.
+* **Redis Streams Support** - Complete implementation with consumer groups and stream management
+* **Geospatial Operations** - Location-based operations with radius and area search capabilities
+* **ACL Security Management** - Enterprise-grade user authentication and access control
+* **Performance Monitoring** - Memory usage analysis and latency tracking
+* **Enhanced Pub/Sub** - Information commands and sharded messaging for Redis 7.0+
+* **Comprehensive Command Coverage** - 75 new commands added across all Redis feature categories
 
+## Recent Major Updates
+
+### Phase 2: Major Feature Categories (22 New Commands)
+Libredis now includes comprehensive support for Redis's most advanced features:
+
+#### Redis Streams
+Complete implementation of Redis Streams including:
+- **Basic Operations**: `XADD`, `XREAD`, `XRANGE`, `XREVRANGE`, `XLEN`, `XDEL`, `XTRIM`
+- **Consumer Groups**: `XGROUP CREATE/DESTROY/SETID`, `XREADGROUP`, `XACK`, `XCLAIM`, `XPENDING`
+- **Stream Information**: `XINFO STREAM/GROUPS/CONSUMERS`
+
+Redis Streams provide powerful event streaming capabilities with consumer group semantics similar to Apache Kafka, enabling reliable message processing at scale.
+
+#### Geospatial Operations
+Full geospatial support for location-based applications:
+- **Basic Operations**: `GEOADD`, `GEODIST`, `GEOHASH`, `GEOPOS`
+- **Modern Search**: `GEOSEARCH`, `GEOSEARCHSTORE` (Redis 6.2+)
+- **Legacy Search**: `GEORADIUS`, `GEORADIUSBYMEMBER` (deprecated but supported)
+
+Geospatial operations enable proximity searches, distance calculations, and location-based queries with support for multiple distance units and search geometries.
+
+### Phase 3: Security & Management Features (29 New Commands)
+Enterprise-grade capabilities for production Redis deployments:
+
+#### ACL Security Management
+Complete access control implementation for Redis 6.0+:
+- **User Management**: `ACL SETUSER`, `ACL GETUSER`, `ACL DELUSER`, `ACL USERS`
+- **Permissions & Audit**: `ACL CAT`, `ACL WHOAMI`, `ACL LOG`, `ACL DRYRUN`
+- **Configuration**: `ACL LOAD`, `ACL SAVE`, `ACL LIST`, `ACL GENPASS`
+
+ACL features enable rule-based permissions, secure password generation, and comprehensive security audit trails for enterprise environments.
+
+#### Enhanced Pub/Sub & Monitoring
+Advanced messaging and performance monitoring:
+- **Pub/Sub Information**: `PUBSUB CHANNELS`, `PUBSUB NUMSUB`, `PUBSUB NUMPAT`
+- **Sharded Pub/Sub**: `SPUBLISH`, `SSUBSCRIBE`, `SUNSUBSCRIBE` (Redis 7.0+)
+- **Memory Management**: `MEMORY USAGE`, `MEMORY STATS`, `MEMORY DOCTOR`, `MEMORY PURGE`
+- **Latency Monitoring**: `LATENCY LATEST`, `LATENCY GRAPH`, `LATENCY RESET`
+
+#### Database Administration
+Professional database management tools:
+- **Database Operations**: `SWAPDB`, `REPLICAOF` (modern replacement for SLAVEOF)
+- **Module Management**: `MODULE LIST`
+
+### Phase 1: Core Missing Commands (24 New Commands)
+Added essential Redis commands across all major data types:
+- **Lists**: `LMOVE`, `BLMOVE`, `LPOS`, `LMPOP`, `BLMPOP`
+- **Sets**: `SMISMEMBER`
+- **Sorted Sets**: `ZPOPMAX`, `ZPOPMIN`, `BZPOPMAX`, `BZPOPMIN`, `ZRANDMEMBER`, `ZMSCORE`
+- **Hashes**: `HSTRLEN`, `HRANDFIELD`
+- **Keys**: `COPY`, `TOUCH`, `UNLINK`, `WAIT`
+- **Bitmaps**: `BITFIELD`, `BITFIELD_RO`, `BITPOS`
+- **Connection**: Enhanced `AUTH` (ACL), `HELLO`, `RESET`
 
 ## Redis Info
 

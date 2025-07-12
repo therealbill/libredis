@@ -194,3 +194,89 @@ func (r *Redis) HScan(key string, cursor uint64, pattern string, count int) (uin
 	hash, err := rp.Multi[1].HashValue()
 	return next, hash, err
 }
+
+// HField represents a hash field-value pair
+type HField struct {
+	Field string
+	Value string
+}
+
+// HRandFieldOptions represents options for HRANDFIELD command
+type HRandFieldOptions struct {
+	Count      int
+	WithValues bool
+}
+
+// HSTRLEN key field
+// HStrLen returns the string length of the value associated with field.
+// Redis 3.2+
+func (r *Redis) HStrLen(key, field string) (int64, error) {
+	rp, err := r.ExecuteCommand("HSTRLEN", key, field)
+	if err != nil {
+		return 0, err
+	}
+	return rp.IntegerValue()
+}
+
+// HRANDFIELD key [count [WITHVALUES]]
+// HRandField returns a random field from the hash stored at key.
+// Redis 6.2+
+func (r *Redis) HRandField(key string) (string, error) {
+	rp, err := r.ExecuteCommand("HRANDFIELD", key)
+	if err != nil {
+		return "", err
+	}
+	return rp.StringValue()
+}
+
+// HRandFieldWithOptions returns random fields with additional options.
+// Redis 6.2+
+func (r *Redis) HRandFieldWithOptions(key string, opts HRandFieldOptions) ([]HField, error) {
+	args := []interface{}{"HRANDFIELD", key}
+	
+	if opts.Count != 0 {
+		args = append(args, opts.Count)
+		if opts.WithValues {
+			args = append(args, "WITHVALUES")
+		}
+	}
+	
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return nil, err
+	}
+	
+	if rp.Type == MultiReply {
+		if opts.WithValues {
+			result := make([]HField, 0, len(rp.Multi)/2)
+			for i := 0; i < len(rp.Multi); i += 2 {
+				if i+1 < len(rp.Multi) {
+					field, err := rp.Multi[i].StringValue()
+					if err != nil {
+						continue
+					}
+					
+					value, err := rp.Multi[i+1].StringValue()
+					if err != nil {
+						continue
+					}
+					
+					result = append(result, HField{Field: field, Value: value})
+				}
+			}
+			return result, nil
+		} else {
+			result := make([]HField, 0, len(rp.Multi))
+			for _, item := range rp.Multi {
+				field, err := item.StringValue()
+				if err != nil {
+					continue
+				}
+				result = append(result, HField{Field: field, Value: ""})
+			}
+			return result, nil
+		}
+	}
+	
+	return nil, nil
+}

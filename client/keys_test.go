@@ -243,3 +243,84 @@ func TestScan(t *testing.T) {
 		t.Fail()
 	}
 }
+
+// Tests for new Phase 1 key commands
+func TestCopy(t *testing.T) {
+	r.Del("source", "destination")
+	r.Set("source", "hello")
+	
+	copied, err := r.Copy("source", "destination")
+	if err != nil {
+		t.Error(err)
+	}
+	if !copied {
+		t.Error("Expected copy to succeed")
+	}
+	
+	// Verify destination has the value
+	value, err := r.Get("destination")
+	if err != nil {
+		t.Error(err)
+	}
+	if string(value) != "hello" {
+		t.Error("Expected 'hello', got", string(value))
+	}
+}
+
+func TestCopyWithOptions(t *testing.T) {
+	r.Del("source", "destination")
+	r.Set("source", "hello")
+	r.Set("destination", "existing")
+	
+	opts := CopyOptions{
+		DestinationDB: 0,
+		Replace:       true,
+	}
+	
+	copied, err := r.CopyWithOptions("source", "destination", opts)
+	if err != nil {
+		t.Error(err)
+	}
+	if !copied {
+		t.Error("Expected copy with replace to succeed")
+	}
+}
+
+func TestTouch(t *testing.T) {
+	r.Del("key1", "key2", "key3")
+	r.Set("key1", "value1")
+	r.Set("key2", "value2")
+	
+	touched, err := r.Touch("key1", "key2", "key3")
+	if err != nil {
+		t.Error(err)
+	}
+	if touched != 2 {
+		t.Error("Expected 2 keys touched, got", touched)
+	}
+}
+
+func TestUnlink(t *testing.T) {
+	r.Del("key1", "key2", "key3")
+	r.Set("key1", "value1")
+	r.Set("key2", "value2")
+	
+	unlinked, err := r.Unlink("key1", "key2", "key3")
+	if err != nil {
+		t.Error(err)
+	}
+	if unlinked != 2 {
+		t.Error("Expected 2 keys unlinked, got", unlinked)
+	}
+}
+
+func TestWait(t *testing.T) {
+	// Test WAIT command with 0 replicas and short timeout
+	synced, err := r.Wait(0, 100)
+	if err != nil {
+		t.Error(err)
+	}
+	if synced < 0 {
+		t.Error("Expected non-negative number of synced replicas")
+	}
+}

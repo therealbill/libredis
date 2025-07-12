@@ -227,3 +227,201 @@ func (r *Redis) RPushx(key, value string) (int64, error) {
 	}
 	return rp.IntegerValue()
 }
+
+// Direction constants for list operations
+const (
+	ListDirectionLeft  = "LEFT"
+	ListDirectionRight = "RIGHT"
+)
+
+// LPosOptions represents options for LPOS command
+type LPosOptions struct {
+	Rank   int // RANK option
+	Count  int // COUNT option  
+	MaxLen int // MAXLEN option
+}
+
+// LMOVE source destination LEFT|RIGHT LEFT|RIGHT
+// LMove atomically returns and removes the first/last element from source list,
+// and pushes the element as the first/last element of destination list.
+// Redis 6.2.0+
+func (r *Redis) LMove(source, destination, wherefrom, whereto string) (string, error) {
+	rp, err := r.ExecuteCommand("LMOVE", source, destination, wherefrom, whereto)
+	if err != nil {
+		return "", err
+	}
+	return rp.StringValue()
+}
+
+// BLMOVE source destination LEFT|RIGHT LEFT|RIGHT timeout
+// BLMove is the blocking variant of LMOVE.
+// Redis 6.2.0+
+func (r *Redis) BLMove(source, destination, wherefrom, whereto string, timeout int) (string, error) {
+	rp, err := r.ExecuteCommand("BLMOVE", source, destination, wherefrom, whereto, timeout)
+	if err != nil {
+		return "", err
+	}
+	if rp.Type == MultiReply {
+		return "", nil
+	}
+	return rp.StringValue()
+}
+
+// LPOS key element [RANK rank] [COUNT num-matches] [MAXLEN len]
+// LPos returns the index of matching elements inside a Redis list.
+// Redis 6.0.6+
+func (r *Redis) LPos(key, element string) (int64, error) {
+	rp, err := r.ExecuteCommand("LPOS", key, element)
+	if err != nil {
+		return 0, err
+	}
+	return rp.IntegerValue()
+}
+
+// LPosWithOptions returns the index of matching elements with additional options.
+// Redis 6.0.6+
+func (r *Redis) LPosWithOptions(key, element string, opts LPosOptions) ([]int64, error) {
+	args := []interface{}{"LPOS", key, element}
+	
+	if opts.Rank != 0 {
+		args = append(args, "RANK", opts.Rank)
+	}
+	if opts.Count != 0 {
+		args = append(args, "COUNT", opts.Count)
+	}
+	if opts.MaxLen != 0 {
+		args = append(args, "MAXLEN", opts.MaxLen)
+	}
+	
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return nil, err
+	}
+	
+	// If COUNT is specified, returns array of integers
+	if opts.Count != 0 {
+		if rp.Type == MultiReply {
+			result := make([]int64, len(rp.Multi))
+			for i, item := range rp.Multi {
+				if val, err := item.IntegerValue(); err == nil {
+					result[i] = val
+				}
+			}
+			return result, nil
+		}
+		return []int64{}, nil
+	}
+	
+	// Single result
+	val, err := rp.IntegerValue()
+	if err != nil {
+		return []int64{}, nil
+	}
+	return []int64{val}, nil
+}
+
+// LMPOP numkeys key [key ...] LEFT|RIGHT [COUNT count]
+// LMPop pops one or more elements from the first non-empty list key.
+// Redis 7.0+
+func (r *Redis) LMPop(keys []string, direction string) (map[string][]string, error) {
+	args := packArgs("LMPOP", len(keys), keys, direction)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return nil, err
+	}
+	
+	if rp.Type == MultiReply && len(rp.Multi) >= 2 {
+		key, err := rp.Multi[0].StringValue()
+		if err != nil {
+			return nil, err
+		}
+		
+		values, err := rp.Multi[1].ListValue()
+		if err != nil {
+			return nil, err
+		}
+		
+		return map[string][]string{key: values}, nil
+	}
+	
+	return nil, nil
+}
+
+// LMPopWithCount pops count elements from the first non-empty list key.
+// Redis 7.0+
+func (r *Redis) LMPopWithCount(keys []string, direction string, count int) (map[string][]string, error) {
+	args := packArgs("LMPOP", len(keys), keys, direction, "COUNT", count)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return nil, err
+	}
+	
+	if rp.Type == MultiReply && len(rp.Multi) >= 2 {
+		key, err := rp.Multi[0].StringValue()
+		if err != nil {
+			return nil, err
+		}
+		
+		values, err := rp.Multi[1].ListValue()
+		if err != nil {
+			return nil, err
+		}
+		
+		return map[string][]string{key: values}, nil
+	}
+	
+	return nil, nil
+}
+
+// BLMPOP timeout numkeys key [key ...] LEFT|RIGHT [COUNT count]
+// BLMPop is the blocking variant of LMPOP.
+// Redis 7.0+
+func (r *Redis) BLMPop(timeout int, keys []string, direction string) (map[string][]string, error) {
+	args := packArgs("BLMPOP", timeout, len(keys), keys, direction)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return nil, err
+	}
+	
+	if rp.Type == MultiReply && len(rp.Multi) >= 2 {
+		key, err := rp.Multi[0].StringValue()
+		if err != nil {
+			return nil, err
+		}
+		
+		values, err := rp.Multi[1].ListValue()
+		if err != nil {
+			return nil, err
+		}
+		
+		return map[string][]string{key: values}, nil
+	}
+	
+	return nil, nil
+}
+
+// BLMPopWithCount is the blocking variant of LMPOP with count.
+// Redis 7.0+
+func (r *Redis) BLMPopWithCount(timeout int, keys []string, direction string, count int) (map[string][]string, error) {
+	args := packArgs("BLMPOP", timeout, len(keys), keys, direction, "COUNT", count)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return nil, err
+	}
+	
+	if rp.Type == MultiReply && len(rp.Multi) >= 2 {
+		key, err := rp.Multi[0].StringValue()
+		if err != nil {
+			return nil, err
+		}
+		
+		values, err := rp.Multi[1].ListValue()
+		if err != nil {
+			return nil, err
+		}
+		
+		return map[string][]string{key: values}, nil
+	}
+	
+	return nil, nil
+}

@@ -321,3 +321,114 @@ func TestZRevRangeByScore(t *testing.T) {
 		t.Fail()
 	}
 }
+
+// Tests for new Phase 1 sorted set commands
+func TestZPopMax(t *testing.T) {
+	r.Del("zset")
+	r.ZAddVariadic("zset", map[string]float64{"one": 1, "two": 2, "three": 3})
+	
+	member, err := r.ZPopMax("zset")
+	if err != nil {
+		t.Error(err)
+	}
+	if member.Member != "three" || member.Score != 3 {
+		t.Error("Expected member 'three' with score 3")
+	}
+}
+
+func TestZPopMaxCount(t *testing.T) {
+	r.Del("zset")
+	r.ZAddVariadic("zset", map[string]float64{"one": 1, "two": 2, "three": 3})
+	
+	members, err := r.ZPopMaxCount("zset", 2)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(members) != 2 {
+		t.Error("Expected 2 members, got", len(members))
+	}
+}
+
+func TestZPopMin(t *testing.T) {
+	r.Del("zset")
+	r.ZAddVariadic("zset", map[string]float64{"one": 1, "two": 2, "three": 3})
+	
+	member, err := r.ZPopMin("zset")
+	if err != nil {
+		t.Error(err)
+	}
+	if member.Member != "one" || member.Score != 1 {
+		t.Error("Expected member 'one' with score 1")
+	}
+}
+
+func TestZPopMinCount(t *testing.T) {
+	r.Del("zset")
+	r.ZAddVariadic("zset", map[string]float64{"one": 1, "two": 2, "three": 3})
+	
+	members, err := r.ZPopMinCount("zset", 2)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(members) != 2 {
+		t.Error("Expected 2 members, got", len(members))
+	}
+}
+
+func TestBZPopMax(t *testing.T) {
+	r.Del("zset1", "zset2")
+	r.ZAddVariadic("zset1", map[string]float64{"one": 1, "two": 2})
+	
+	result, err := r.BZPopMax([]string{"zset1", "zset2"}, 1)
+	if err != nil {
+		t.Error(err)
+	}
+	if result.Key != "zset1" {
+		t.Error("Expected key 'zset1'")
+	}
+	if len(result.Members) == 0 {
+		t.Error("Expected at least one member")
+	}
+}
+
+func TestBZPopMin(t *testing.T) {
+	r.Del("zset1", "zset2")
+	r.ZAddVariadic("zset1", map[string]float64{"one": 1, "two": 2})
+	
+	result, err := r.BZPopMin([]string{"zset1", "zset2"}, 1)
+	if err != nil {
+		t.Error(err)
+	}
+	if result.Key != "zset1" {
+		t.Error("Expected key 'zset1'")
+	}
+	if len(result.Members) == 0 {
+		t.Error("Expected at least one member")
+	}
+}
+
+func TestZRandMember(t *testing.T) {
+	r.Del("zset")
+	r.ZAddVariadic("zset", map[string]float64{"one": 1, "two": 2, "three": 3})
+	
+	member, err := r.ZRandMember("zset")
+	if err != nil {
+		t.Error(err)
+	}
+	if member == "" {
+		t.Error("Expected non-empty member")
+	}
+}
+
+func TestZMScore(t *testing.T) {
+	r.Del("zset")
+	r.ZAddVariadic("zset", map[string]float64{"one": 1, "two": 2, "three": 3})
+	
+	scores, err := r.ZMScore("zset", "one", "two", "nonexistent")
+	if err != nil {
+		t.Error(err)
+	}
+	if len(scores) != 3 {
+		t.Error("Expected 3 scores, got", len(scores))
+	}
+}

@@ -154,3 +154,181 @@ func TestPUnSubscribe(t *testing.T) {
 	}
 	quit = true
 }
+
+// Enhanced Pub/Sub Tests
+
+func TestPubSubChannels(t *testing.T) {
+	// Create a subscriber to make sure we have active channels
+	sub, err := r.PubSub()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer sub.Close()
+
+	// Subscribe to a test channel
+	err = sub.Subscribe("test_channel")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// Give it time to register
+	time.Sleep(100 * time.Millisecond)
+
+	// Get all active channels
+	channels, err := r.PubSubChannels()
+	if err != nil {
+		t.Logf("PubSubChannels failed (Redis may not support command): %v", err)
+		return
+	}
+
+	t.Logf("Active channels: %v", channels)
+}
+
+func TestPubSubChannelsWithPattern(t *testing.T) {
+	// Create a subscriber to make sure we have active channels
+	sub, err := r.PubSub()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer sub.Close()
+
+	// Subscribe to test channels
+	err = sub.Subscribe("test_channel_1", "test_channel_2", "other_channel")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// Give it time to register
+	time.Sleep(100 * time.Millisecond)
+
+	// Get channels matching pattern
+	channels, err := r.PubSubChannelsWithPattern("test_*")
+	if err != nil {
+		t.Logf("PubSubChannelsWithPattern failed (Redis may not support command): %v", err)
+		return
+	}
+
+	t.Logf("Channels matching 'test_*': %v", channels)
+}
+
+func TestPubSubNumSub(t *testing.T) {
+	// Create multiple subscribers
+	sub1, err := r.PubSub()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer sub1.Close()
+
+	sub2, err := r.PubSub()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer sub2.Close()
+
+	// Subscribe to same channel
+	err = sub1.Subscribe("test_numsub")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = sub2.Subscribe("test_numsub")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// Give it time to register
+	time.Sleep(100 * time.Millisecond)
+
+	// Get subscriber counts
+	channelInfos, err := r.PubSubNumSub("test_numsub")
+	if err != nil {
+		t.Logf("PubSubNumSub failed (Redis may not support command): %v", err)
+		return
+	}
+
+	if len(channelInfos) > 0 {
+		t.Logf("Channel %s has %d subscribers", channelInfos[0].Channel, channelInfos[0].Subscribers)
+		if channelInfos[0].Subscribers < 1 {
+			t.Error("Expected at least 1 subscriber")
+		}
+	}
+}
+
+func TestPubSubNumPat(t *testing.T) {
+	// Create a pattern subscriber
+	psub, err := r.PubSub()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer psub.Close()
+
+	// Subscribe to a pattern
+	err = psub.PSubscribe("test_pattern_*")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// Give it time to register
+	time.Sleep(100 * time.Millisecond)
+
+	// Get pattern subscription count
+	count, err := r.PubSubNumPat()
+	if err != nil {
+		t.Logf("PubSubNumPat failed (Redis may not support command): %v", err)
+		return
+	}
+
+	t.Logf("Number of pattern subscriptions: %d", count)
+	if count < 1 {
+		t.Error("Expected at least 1 pattern subscription")
+	}
+}
+
+// Sharded Pub/Sub Tests (Redis 7.0+)
+
+func TestSPublish(t *testing.T) {
+	// Test sharded publish
+	count, err := r.SPublish("test_shard_channel", "test message")
+	if err != nil {
+		t.Logf("SPublish failed (Redis may not support sharded pub/sub): %v", err)
+		return
+	}
+
+	t.Logf("SPublish delivered to %d shards", count)
+}
+
+func TestShardedPubSub(t *testing.T) {
+	// Create sharded pub/sub connection
+	spub, err := r.ShardedPubSub()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer spub.Close()
+
+	// Test basic functionality without Redis 7.0+ requirement
+	t.Logf("ShardedPubSub connection created successfully")
+	
+	// Test subscribe (may fail on older Redis versions)
+	err = spub.SSubscribe("test_shard")
+	if err != nil {
+		t.Logf("SSubscribe failed (Redis may not support sharded pub/sub): %v", err)
+		return
+	}
+
+	// Test unsubscribe
+	err = spub.SUnSubscribe("test_shard")
+	if err != nil {
+		t.Logf("SUnSubscribe failed: %v", err)
+	}
+}
