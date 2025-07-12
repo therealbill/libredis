@@ -262,3 +262,74 @@ func (r *Redis) Scan(cursor uint64, pattern string, count int) (uint64, []string
 	list, err := rp.Multi[1].ListValue()
 	return next, list, err
 }
+
+// CopyOptions represents options for COPY command
+type CopyOptions struct {
+	DestinationDB int  // DB option
+	Replace       bool // REPLACE option
+}
+
+// COPY source destination [DB destination-db] [REPLACE]
+// Copy makes a copy of the value stored at the source key to the destination key.
+// Redis 6.2+
+func (r *Redis) Copy(source, destination string) (bool, error) {
+	rp, err := r.ExecuteCommand("COPY", source, destination)
+	if err != nil {
+		return false, err
+	}
+	return rp.BoolValue()
+}
+
+// CopyWithOptions copies a key with additional options.
+// Redis 6.2+
+func (r *Redis) CopyWithOptions(source, destination string, opts CopyOptions) (bool, error) {
+	args := []interface{}{"COPY", source, destination}
+	
+	if opts.DestinationDB != 0 {
+		args = append(args, "DB", opts.DestinationDB)
+	}
+	if opts.Replace {
+		args = append(args, "REPLACE")
+	}
+	
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return false, err
+	}
+	return rp.BoolValue()
+}
+
+// TOUCH key [key ...]
+// Touch alters the last access time of one or more keys.
+// Redis 3.2.1+
+func (r *Redis) Touch(keys ...string) (int64, error) {
+	args := packArgs("TOUCH", keys)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return 0, err
+	}
+	return rp.IntegerValue()
+}
+
+// UNLINK key [key ...]
+// Unlink is similar to DEL but performs non-blocking deletion.
+// Redis 4.0+
+func (r *Redis) Unlink(keys ...string) (int64, error) {
+	args := packArgs("UNLINK", keys)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return 0, err
+	}
+	return rp.IntegerValue()
+}
+
+// WAIT numreplicas timeout
+// Wait blocks until all write commands are successfully synced to replicas.
+// Redis 3.0+
+func (r *Redis) Wait(numreplicas, timeout int) (int64, error) {
+	rp, err := r.ExecuteCommand("WAIT", numreplicas, timeout)
+	if err != nil {
+		return 0, err
+	}
+	return rp.IntegerValue()
+}

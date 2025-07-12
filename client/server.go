@@ -446,3 +446,299 @@ func (r *Redis) Command() (comms []structures.CommandEntry, err error) {
 	}
 	return
 }
+
+// Memory Management (Redis 4.0+)
+
+// Memory statistics and information types
+type MemoryStats struct {
+	PeakAllocated      int64
+	TotalAllocated     int64
+	StartupAllocated   int64
+	ReplicationBacklog int64
+	ClientsSlaves      int64
+	ClientsNormal      int64
+	AOFBuffer         int64
+	LuaCaches         int64
+	Overhead          MemoryOverhead
+	Keys              MemoryKeys
+	Dataset           MemoryDataset
+}
+
+type MemoryOverhead struct {
+	Total     int64
+	Hashtable int64
+	Expires   int64
+}
+
+type MemoryKeys struct {
+	Count               int64
+	BucketsCount        int64
+	ExpiringCount       int64
+	ExpiringBucketsCount int64
+}
+
+type MemoryDataset struct {
+	Bytes      int64
+	Percentage float64
+}
+
+// MEMORY USAGE key [SAMPLES count]
+// MemoryUsage returns memory usage information for a key.
+func (r *Redis) MemoryUsage(key string) (int64, error) {
+	args := packArgs("MEMORY", "USAGE", key)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return 0, err
+	}
+	return rp.IntegerValue()
+}
+
+// MemoryUsageWithSamples returns memory usage with specific sample count.
+func (r *Redis) MemoryUsageWithSamples(key string, samples int) (int64, error) {
+	args := packArgs("MEMORY", "USAGE", key, "SAMPLES", samples)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return 0, err
+	}
+	return rp.IntegerValue()
+}
+
+// MEMORY STATS
+// MemoryStats returns detailed memory usage statistics.
+func (r *Redis) MemoryStats() (MemoryStats, error) {
+	args := packArgs("MEMORY", "STATS")
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return MemoryStats{}, err
+	}
+
+	stats := MemoryStats{}
+	if rp.Multi != nil {
+		for i := 0; i < len(rp.Multi)-1; i += 2 {
+			key, _ := rp.Multi[i].StringValue()
+			value := rp.Multi[i+1]
+
+			switch key {
+			case "peak.allocated":
+				stats.PeakAllocated, _ = value.IntegerValue()
+			case "total.allocated":
+				stats.TotalAllocated, _ = value.IntegerValue()
+			case "startup.allocated":
+				stats.StartupAllocated, _ = value.IntegerValue()
+			case "replication.backlog":
+				stats.ReplicationBacklog, _ = value.IntegerValue()
+			case "clients.slaves":
+				stats.ClientsSlaves, _ = value.IntegerValue()
+			case "clients.normal":
+				stats.ClientsNormal, _ = value.IntegerValue()
+			case "aof.buffer":
+				stats.AOFBuffer, _ = value.IntegerValue()
+			case "lua.caches":
+				stats.LuaCaches, _ = value.IntegerValue()
+			case "overhead.hashtable.main":
+				stats.Overhead.Hashtable, _ = value.IntegerValue()
+			case "overhead.hashtable.expires":
+				stats.Overhead.Expires, _ = value.IntegerValue()
+			case "overhead.total":
+				stats.Overhead.Total, _ = value.IntegerValue()
+			case "keys.count":
+				stats.Keys.Count, _ = value.IntegerValue()
+			case "keys.bytes-per-key":
+				// Skip calculated fields
+			case "dataset.bytes":
+				stats.Dataset.Bytes, _ = value.IntegerValue()
+			case "dataset.percentage":
+				if valueStr, err := value.StringValue(); err == nil {
+					fmt.Sscanf(valueStr, "%f", &stats.Dataset.Percentage)
+				}
+			}
+		}
+	}
+
+	return stats, nil
+}
+
+// MEMORY DOCTOR
+// MemoryDoctor returns memory analysis and recommendations.
+func (r *Redis) MemoryDoctor() (string, error) {
+	args := packArgs("MEMORY", "DOCTOR")
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return "", err
+	}
+	return rp.StringValue()
+}
+
+// MEMORY PURGE
+// MemoryPurge attempts to purge dirty pages for better memory reporting.
+func (r *Redis) MemoryPurge() error {
+	args := packArgs("MEMORY", "PURGE")
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return err
+	}
+	return rp.OKValue()
+}
+
+// Latency Monitoring (Redis 2.8.13+)
+
+// Latency monitoring types
+type LatencySample struct {
+	Timestamp int64
+	Latency   int64
+}
+
+type LatencyStats struct {
+	Event    string
+	Latest   int64
+	AllTime  int64
+	Samples  []LatencySample
+}
+
+// LATENCY LATEST
+// LatencyLatest returns latest latency samples for all events.
+func (r *Redis) LatencyLatest() ([]LatencyStats, error) {
+	args := packArgs("LATENCY", "LATEST")
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return nil, err
+	}
+
+	if rp.Multi == nil {
+		return nil, nil
+	}
+
+	var latencyStats []LatencyStats
+	for _, eventReply := range rp.Multi {
+		if len(eventReply.Multi) >= 4 {
+			event, _ := eventReply.Multi[0].StringValue()
+			latest, _ := eventReply.Multi[1].IntegerValue()
+			allTime, _ := eventReply.Multi[2].IntegerValue()
+
+			stats := LatencyStats{
+				Event:   event,
+				Latest:  latest,
+				AllTime: allTime,
+			}
+			latencyStats = append(latencyStats, stats)
+		}
+	}
+
+	return latencyStats, nil
+}
+
+// Note: LatencyHistory is already implemented in latency.go with different signature
+
+// LATENCY RESET [event ...]
+// LatencyReset resets latency data for all or specified events.
+func (r *Redis) LatencyReset() (int64, error) {
+	args := packArgs("LATENCY", "RESET")
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return 0, err
+	}
+	return rp.IntegerValue()
+}
+
+// Note: LatencyResetEvents is already implemented in latency.go with different signature
+
+// LATENCY GRAPH event
+// LatencyGraph returns ASCII art latency graph for an event.
+func (r *Redis) LatencyGraph(event string) (string, error) {
+	args := packArgs("LATENCY", "GRAPH", event)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return "", err
+	}
+	return rp.StringValue()
+}
+
+// Database Management (Redis 4.0+)
+
+// SWAPDB index1 index2
+// SwapDB swaps the contents of two Redis databases.
+func (r *Redis) SwapDB(index1, index2 int) error {
+	args := packArgs("SWAPDB", index1, index2)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return err
+	}
+	return rp.OKValue()
+}
+
+// REPLICAOF host port / REPLICAOF NO ONE
+// ReplicaOf configures Redis as a replica of another instance.
+func (r *Redis) ReplicaOf(host, port string) error {
+	args := packArgs("REPLICAOF", host, port)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return err
+	}
+	return rp.OKValue()
+}
+
+// ReplicaOfNoOne stops replication and promotes to master.
+func (r *Redis) ReplicaOfNoOne() error {
+	args := packArgs("REPLICAOF", "NO", "ONE")
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return err
+	}
+	return rp.OKValue()
+}
+
+// Module Management (Redis 4.0+)
+
+// Module information
+type ModuleInfo struct {
+	Name    string
+	Version int64
+	Path    string
+	Args    []string
+}
+
+// MODULE LIST
+// ModuleList returns information about loaded Redis modules.
+func (r *Redis) ModuleList() ([]ModuleInfo, error) {
+	args := packArgs("MODULE", "LIST")
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return nil, err
+	}
+
+	if rp.Multi == nil {
+		return nil, nil
+	}
+
+	var modules []ModuleInfo
+	for _, moduleReply := range rp.Multi {
+		if moduleReply.Multi != nil && len(moduleReply.Multi) >= 6 {
+			module := ModuleInfo{}
+			
+			// Parse module information: [name, name_value, ver, version_value, path, path_value, args, args_array]
+			for i := 0; i < len(moduleReply.Multi)-1; i += 2 {
+				key, _ := moduleReply.Multi[i].StringValue()
+				value := moduleReply.Multi[i+1]
+
+				switch key {
+				case "name":
+					module.Name, _ = value.StringValue()
+				case "ver":
+					module.Version, _ = value.IntegerValue()
+				case "path":
+					module.Path, _ = value.StringValue()
+				case "args":
+					if value.Multi != nil {
+						for _, argReply := range value.Multi {
+							arg, _ := argReply.StringValue()
+							module.Args = append(module.Args, arg)
+						}
+					}
+				}
+			}
+			modules = append(modules, module)
+		}
+	}
+
+	return modules, nil
+}

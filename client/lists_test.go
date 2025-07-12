@@ -4,6 +4,29 @@ import (
 	"testing"
 )
 
+// Test new constants and data structures
+func TestListDirectionConstants(t *testing.T) {
+	if ListDirectionLeft != "LEFT" {
+		t.Error("ListDirectionLeft constant incorrect")
+	}
+	
+	if ListDirectionRight != "RIGHT" {
+		t.Error("ListDirectionRight constant incorrect")
+	}
+}
+
+func TestLPosOptions(t *testing.T) {
+	opts := LPosOptions{
+		Rank:   1,
+		Count:  5,
+		MaxLen: 100,
+	}
+	
+	if opts.Rank != 1 || opts.Count != 5 || opts.MaxLen != 100 {
+		t.Error("LPosOptions struct not working correctly")
+	}
+}
+
 func TestBLPop(t *testing.T) {
 	r.Del("key")
 	result, err := r.BLPop([]string{"key"}, 1)
@@ -233,5 +256,78 @@ func TestRPushx(t *testing.T) {
 		t.Error(err)
 	} else if n != 0 {
 		t.Fail()
+	}
+}
+
+// Tests for new Phase 1 commands
+func TestLMove(t *testing.T) {
+	r.Del("source", "dest")
+	r.RPush("source", "one", "two", "three")
+	
+	value, err := r.LMove("source", "dest", ListDirectionRight, ListDirectionLeft)
+	if err != nil {
+		t.Error(err)
+	}
+	if value != "three" {
+		t.Error("Expected 'three', got", value)
+	}
+}
+
+func TestBLMove(t *testing.T) {
+	r.Del("source", "dest")
+	r.RPush("source", "one", "two")
+	
+	value, err := r.BLMove("source", "dest", ListDirectionLeft, ListDirectionRight, 1)
+	if err != nil {
+		t.Error(err)
+	}
+	if value != "one" {
+		t.Error("Expected 'one', got", value)
+	}
+}
+
+func TestLPos(t *testing.T) {
+	r.Del("key")
+	r.RPush("key", "a", "b", "c", "b")
+	
+	pos, err := r.LPos("key", "b")
+	if err != nil {
+		t.Error(err)
+	}
+	if pos != 1 {
+		t.Error("Expected position 1, got", pos)
+	}
+}
+
+func TestLPosWithOptions(t *testing.T) {
+	r.Del("key")
+	r.RPush("key", "a", "b", "c", "b", "b")
+	
+	opts := LPosOptions{
+		Rank:   2,
+		Count:  2,
+		MaxLen: 10,
+	}
+	
+	positions, err := r.LPosWithOptions("key", "b", opts)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(positions) == 0 {
+		t.Error("Expected at least one position")
+	}
+}
+
+func TestLMPop(t *testing.T) {
+	r.Del("list1", "list2")
+	r.RPush("list1", "one", "two")
+	r.RPush("list2", "three", "four")
+	
+	result, err := r.LMPop([]string{"list1", "list2"}, ListDirectionLeft)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(result) == 0 {
+		t.Error("Expected non-empty result")
 	}
 }

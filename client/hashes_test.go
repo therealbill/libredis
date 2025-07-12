@@ -163,3 +163,51 @@ func TestHScan(t *testing.T) {
 		t.Fail()
 	}
 }
+
+// Tests for new Phase 1 hash commands
+func TestHStrLen(t *testing.T) {
+	r.Del("hash")
+	r.HSet("hash", "field1", "hello world")
+	
+	length, err := r.HStrLen("hash", "field1")
+	if err != nil {
+		t.Error(err)
+	}
+	if length != 11 {
+		t.Error("Expected length 11, got", length)
+	}
+	
+	// Test non-existent field
+	length, err = r.HStrLen("hash", "nonexistent")
+	if err != nil {
+		t.Error(err)
+	}
+	if length != 0 {
+		t.Error("Expected length 0 for non-existent field, got", length)
+	}
+}
+
+func TestHRandField(t *testing.T) {
+	r.Del("hash")
+	r.HSet("hash", "field1", "value1")
+	r.HSet("hash", "field2", "value2")
+	r.HSet("hash", "field3", "value3")
+	
+	field, err := r.HRandField("hash")
+	if err != nil {
+		t.Error(err)
+	}
+	if field == "" {
+		t.Error("Expected non-empty field")
+	}
+	
+	// Test with empty hash
+	r.Del("emptyhash")
+	field, err = r.HRandField("emptyhash")
+	if err != nil {
+		t.Error(err)
+	}
+	if field != "" {
+		t.Error("Expected empty field for empty hash")
+	}
+}

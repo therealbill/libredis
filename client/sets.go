@@ -204,3 +204,26 @@ func (r *Redis) SScan(key string, cursor uint64, pattern string, count int) (uin
 	list, err := rp.Multi[1].ListValue()
 	return next, list, err
 }
+
+// SMISMEMBER key member [member ...]
+// SMIsMember returns whether each member is a member of the set stored at key.
+// Redis 6.2.0+
+func (r *Redis) SMIsMember(key string, members ...string) ([]bool, error) {
+	args := packArgs("SMISMEMBER", key, members)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return nil, err
+	}
+	
+	if rp.Type == MultiReply {
+		result := make([]bool, len(rp.Multi))
+		for i, item := range rp.Multi {
+			if val, err := item.BoolValue(); err == nil {
+				result[i] = val
+			}
+		}
+		return result, nil
+	}
+	
+	return nil, nil
+}

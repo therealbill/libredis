@@ -285,7 +285,7 @@ func (r *Redis) SentinelFailover(podname string) (bool, error) {
 
 	if rp.Error != "" {
 		log.Println("Error on failover command execution:", rp.Error)
-		return false, fmt.Errorf(rp.Error)
+		return false, fmt.Errorf("%s", rp.Error)
 	}
 	return true, nil
 }

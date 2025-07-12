@@ -332,3 +332,340 @@ func (r *Redis) ZScan(key string, cursor uint64, pattern string, count int) (uin
 	list, err := rp.Multi[1].ListValue()
 	return next, list, err
 }
+
+// ZMember represents a sorted set member with score
+type ZMember struct {
+	Member string
+	Score  float64
+}
+
+// ZPopResult represents the result of a ZPOP operation
+type ZPopResult struct {
+	Key     string
+	Members []ZMember
+}
+
+// ZRandMemberOptions represents options for ZRANDMEMBER command
+type ZRandMemberOptions struct {
+	Count      int
+	WithScores bool
+}
+
+// ZPOPMAX key [count]
+// ZPopMax removes and returns up to count members with the highest scores.
+// Redis 5.0+
+func (r *Redis) ZPopMax(key string) (ZMember, error) {
+	rp, err := r.ExecuteCommand("ZPOPMAX", key)
+	if err != nil {
+		return ZMember{}, err
+	}
+	
+	if rp.Type == MultiReply && len(rp.Multi) >= 2 {
+		member, err := rp.Multi[0].StringValue()
+		if err != nil {
+			return ZMember{}, err
+		}
+		
+		scoreStr, err := rp.Multi[1].StringValue()
+		if err != nil {
+			return ZMember{}, err
+		}
+		
+		score, err := strconv.ParseFloat(scoreStr, 64)
+		if err != nil {
+			return ZMember{}, err
+		}
+		
+		return ZMember{Member: member, Score: score}, nil
+	}
+	
+	return ZMember{}, nil
+}
+
+// ZPopMaxCount removes and returns up to count members with the highest scores.
+// Redis 5.0+
+func (r *Redis) ZPopMaxCount(key string, count int) ([]ZMember, error) {
+	rp, err := r.ExecuteCommand("ZPOPMAX", key, count)
+	if err != nil {
+		return nil, err
+	}
+	
+	if rp.Type == MultiReply {
+		result := make([]ZMember, 0, len(rp.Multi)/2)
+		for i := 0; i < len(rp.Multi); i += 2 {
+			if i+1 < len(rp.Multi) {
+				member, err := rp.Multi[i].StringValue()
+				if err != nil {
+					continue
+				}
+				
+				scoreStr, err := rp.Multi[i+1].StringValue()
+				if err != nil {
+					continue
+				}
+				
+				score, err := strconv.ParseFloat(scoreStr, 64)
+				if err != nil {
+					continue
+				}
+				
+				result = append(result, ZMember{Member: member, Score: score})
+			}
+		}
+		return result, nil
+	}
+	
+	return nil, nil
+}
+
+// ZPOPMIN key [count]
+// ZPopMin removes and returns up to count members with the lowest scores.
+// Redis 5.0+
+func (r *Redis) ZPopMin(key string) (ZMember, error) {
+	rp, err := r.ExecuteCommand("ZPOPMIN", key)
+	if err != nil {
+		return ZMember{}, err
+	}
+	
+	if rp.Type == MultiReply && len(rp.Multi) >= 2 {
+		member, err := rp.Multi[0].StringValue()
+		if err != nil {
+			return ZMember{}, err
+		}
+		
+		scoreStr, err := rp.Multi[1].StringValue()
+		if err != nil {
+			return ZMember{}, err
+		}
+		
+		score, err := strconv.ParseFloat(scoreStr, 64)
+		if err != nil {
+			return ZMember{}, err
+		}
+		
+		return ZMember{Member: member, Score: score}, nil
+	}
+	
+	return ZMember{}, nil
+}
+
+// ZPopMinCount removes and returns up to count members with the lowest scores.
+// Redis 5.0+
+func (r *Redis) ZPopMinCount(key string, count int) ([]ZMember, error) {
+	rp, err := r.ExecuteCommand("ZPOPMIN", key, count)
+	if err != nil {
+		return nil, err
+	}
+	
+	if rp.Type == MultiReply {
+		result := make([]ZMember, 0, len(rp.Multi)/2)
+		for i := 0; i < len(rp.Multi); i += 2 {
+			if i+1 < len(rp.Multi) {
+				member, err := rp.Multi[i].StringValue()
+				if err != nil {
+					continue
+				}
+				
+				scoreStr, err := rp.Multi[i+1].StringValue()
+				if err != nil {
+					continue
+				}
+				
+				score, err := strconv.ParseFloat(scoreStr, 64)
+				if err != nil {
+					continue
+				}
+				
+				result = append(result, ZMember{Member: member, Score: score})
+			}
+		}
+		return result, nil
+	}
+	
+	return nil, nil
+}
+
+// BZPOPMAX key [key ...] timeout
+// BZPopMax is the blocking variant of ZPOPMAX.
+// Redis 5.0+
+func (r *Redis) BZPopMax(keys []string, timeout int) (ZPopResult, error) {
+	args := packArgs("BZPOPMAX", keys, timeout)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return ZPopResult{}, err
+	}
+	
+	if rp.Type == MultiReply && len(rp.Multi) >= 3 {
+		key, err := rp.Multi[0].StringValue()
+		if err != nil {
+			return ZPopResult{}, err
+		}
+		
+		member, err := rp.Multi[1].StringValue()
+		if err != nil {
+			return ZPopResult{}, err
+		}
+		
+		scoreStr, err := rp.Multi[2].StringValue()
+		if err != nil {
+			return ZPopResult{}, err
+		}
+		
+		score, err := strconv.ParseFloat(scoreStr, 64)
+		if err != nil {
+			return ZPopResult{}, err
+		}
+		
+		return ZPopResult{
+			Key:     key,
+			Members: []ZMember{{Member: member, Score: score}},
+		}, nil
+	}
+	
+	return ZPopResult{}, nil
+}
+
+// BZPOPMIN key [key ...] timeout
+// BZPopMin is the blocking variant of ZPOPMIN.
+// Redis 5.0+
+func (r *Redis) BZPopMin(keys []string, timeout int) (ZPopResult, error) {
+	args := packArgs("BZPOPMIN", keys, timeout)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return ZPopResult{}, err
+	}
+	
+	if rp.Type == MultiReply && len(rp.Multi) >= 3 {
+		key, err := rp.Multi[0].StringValue()
+		if err != nil {
+			return ZPopResult{}, err
+		}
+		
+		member, err := rp.Multi[1].StringValue()
+		if err != nil {
+			return ZPopResult{}, err
+		}
+		
+		scoreStr, err := rp.Multi[2].StringValue()
+		if err != nil {
+			return ZPopResult{}, err
+		}
+		
+		score, err := strconv.ParseFloat(scoreStr, 64)
+		if err != nil {
+			return ZPopResult{}, err
+		}
+		
+		return ZPopResult{
+			Key:     key,
+			Members: []ZMember{{Member: member, Score: score}},
+		}, nil
+	}
+	
+	return ZPopResult{}, nil
+}
+
+// ZRANDMEMBER key [count [WITHSCORES]]
+// ZRandMember returns a random member from the sorted set.
+// Redis 6.2+
+func (r *Redis) ZRandMember(key string) (string, error) {
+	rp, err := r.ExecuteCommand("ZRANDMEMBER", key)
+	if err != nil {
+		return "", err
+	}
+	return rp.StringValue()
+}
+
+// ZRandMemberWithOptions returns random members with additional options.
+// Redis 6.2+
+func (r *Redis) ZRandMemberWithOptions(key string, opts ZRandMemberOptions) ([]ZMember, error) {
+	args := []interface{}{"ZRANDMEMBER", key}
+	
+	if opts.Count != 0 {
+		args = append(args, opts.Count)
+		if opts.WithScores {
+			args = append(args, "WITHSCORES")
+		}
+	}
+	
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return nil, err
+	}
+	
+	if rp.Type == MultiReply {
+		if opts.WithScores {
+			result := make([]ZMember, 0, len(rp.Multi)/2)
+			for i := 0; i < len(rp.Multi); i += 2 {
+				if i+1 < len(rp.Multi) {
+					member, err := rp.Multi[i].StringValue()
+					if err != nil {
+						continue
+					}
+					
+					scoreStr, err := rp.Multi[i+1].StringValue()
+					if err != nil {
+						continue
+					}
+					
+					score, err := strconv.ParseFloat(scoreStr, 64)
+					if err != nil {
+						continue
+					}
+					
+					result = append(result, ZMember{Member: member, Score: score})
+				}
+			}
+			return result, nil
+		} else {
+			result := make([]ZMember, 0, len(rp.Multi))
+			for _, item := range rp.Multi {
+				member, err := item.StringValue()
+				if err != nil {
+					continue
+				}
+				result = append(result, ZMember{Member: member, Score: 0})
+			}
+			return result, nil
+		}
+	}
+	
+	return nil, nil
+}
+
+// ZMSCORE key member [member ...]
+// ZMScore returns the scores associated with the specified members.
+// Redis 6.2+
+func (r *Redis) ZMScore(key string, members ...string) ([]float64, error) {
+	args := packArgs("ZMSCORE", key, members)
+	rp, err := r.ExecuteCommand(args...)
+	if err != nil {
+		return nil, err
+	}
+	
+	if rp.Type == MultiReply {
+		result := make([]float64, len(rp.Multi))
+		for i, item := range rp.Multi {
+			if item.Type == BulkReply && item.Bulk != nil {
+				scoreStr, err := item.StringValue()
+				if err != nil {
+					result[i] = 0
+					continue
+				}
+				
+				score, err := strconv.ParseFloat(scoreStr, 64)
+				if err != nil {
+					result[i] = 0
+					continue
+				}
+				
+				result[i] = score
+			} else {
+				result[i] = 0
+			}
+		}
+		return result, nil
+	}
+	
+	return nil, nil
+}
